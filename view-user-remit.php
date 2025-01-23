@@ -3,71 +3,34 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include 'database.php';  // Move this to top
+include 'database.php';
 
-// Check admin status
-if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-    header("Location: home.php");
+// Check user login
+if (!isset($_SESSION["user_id"])) {
+    header("Location: index.php");
     exit();
 }
 
-// SQL query with error checking
+$total_points_sql = "SELECT total_points FROM tbl_user WHERE id = ?";
+$stmt_points = $conn->prepare($total_points_sql);
+$stmt_points->bind_param("i", $_SESSION["user_id"]);
+$stmt_points->execute();
+$total_points_result = $stmt_points->get_result();
+$total_points = $total_points_result->fetch_assoc()["total_points"] ?? 0;
+
+// SQL query filtered by user_id
 $sql = "SELECT 
             r.*,
             s.name as center_name,
-            s.address as center_address,
-            u.fullname as user_fullname 
+            s.address as center_address
         FROM tbl_remit r
         INNER JOIN tbl_sortation_centers s ON s.id = r.sortation_center_id 
-        INNER JOIN tbl_user u ON u.id = r.user_id";
+        WHERE r.user_id = ?";
         
-$result = $conn->query($sql);
-if (!$result) {
-    die("Query failed: " . $conn->error);
-}
-
-// Points update processing
-if(isset($_POST['update_points'])) {
-    $remit_id = (int)$_POST['remit_id'];
-    $points = (int)$_POST['points'];
-    $user_id = (int)$_POST['user_id'];
-    
-    if($points > 0) {
-        try {
-            // Start transaction
-            $conn->begin_transaction();
-            
-            $stmt = $conn->prepare("UPDATE tbl_remit SET points = ? WHERE id = ?");
-            if(!$stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            
-            $stmt->bind_param("ii", $points, $remit_id);
-            if(!$stmt->execute()) {
-                throw new Exception("Execute failed: " . $stmt->error);
-            }
-            
-            // Update user points
-            $stmt2 = $conn->prepare("UPDATE tbl_user SET total_points = total_points + ? WHERE id = ?");
-            if(!$stmt2) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            
-            $stmt2->bind_param("ii", $points, $user_id);
-            if(!$stmt2->execute()) {
-                throw new Exception("Execute failed: " . $stmt2->error);
-            }
-            
-            $conn->commit();
-            echo "<script>alert('Points updated successfully!');</script>";
-            
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
-        }
-    }
-}
-
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $_SESSION["user_id"]);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -83,16 +46,19 @@ if(isset($_POST['update_points'])) {
              src="smart-recycling-logo.jpg"/>
 
         <p class="text-[clamp(30px,5vw,50px)] font-bold text-white my-5">
-            Remit Records
+            My Remit Records
         </p>
+
+        <div class="w-full max-w-[500px] bg-white rounded-lg p-6 shadow-lg mb-4">
+            <p class="text-[clamp(1.2rem,3vw,1.8rem)] font-bold text-center">
+                Total Points: <?php echo $total_points; ?>
+            </p>
+        </div>
 
         <div class="w-full max-w-[500px] flex flex-col gap-4">
             <?php if ($result->num_rows > 0): ?>
                 <?php while($row = $result->fetch_assoc()): ?>
                     <div class="bg-white rounded-lg p-6 shadow-lg">
-                        <h3 class="text-[clamp(1.2rem,3vw,1.8rem)] font-bold mb-2">
-                            <?php echo htmlspecialchars($row["user_fullname"]); ?>
-                        </h3>
                         <p class="font-bold text-gray-800 mb-2">
                             <?php echo htmlspecialchars($row["item_name"]); ?>
                         </p>
@@ -105,25 +71,11 @@ if(isset($_POST['update_points'])) {
                         <p class="text-gray-600 mb-4">
                             <?php echo htmlspecialchars($row["center_address"]); ?>
                         </p>
-                        
-                        <!-- Points Form -->
-                        <form method="POST" class="mt-4">
-                            <input type="hidden" name="remit_id" value="<?php echo $row['id']; ?>">
-                            <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
-                            <div class="flex gap-2">
-                                <input type="number" 
-                                      name="points" 
-                                      placeholder="Enter points..." 
-                                      class="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#7ed957]"
-                                      min="1" 
-                                      required>
-                                <button type="submit" 
-                                        name="update_points" 
-                                        class="bg-[#7ed957] text-white px-6 py-2 rounded-full hover:bg-opacity-90 transition-all duration-200">
-                                    Set Points
-                                </button>
+                        <?php if ($row["points"] > 0): ?>
+                            <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full inline-block">
+                                Points Earned: <?php echo $row["points"]; ?>
                             </div>
-                        </form>
+                        <?php endif; ?>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>

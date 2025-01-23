@@ -1,113 +1,77 @@
 <?php
-
-ob_clean();
 session_start();
-session_destroy();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
+$error_msg = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    include 'database.php';
+    
+    // Sanitize inputs
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
+    $password = mysqli_real_escape_string($conn, $_POST["password"]);
+    
+    // Modified query to include is_admin
+    $stmt = $conn->prepare("SELECT id, fullname, is_admin FROM tbl_user WHERE username = ? AND password = ? LIMIT 1");
+    $stmt->bind_param("ss", $email, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        
+        // Set session variables including admin status
+        $_SESSION["logged_in"] = true;
+        $_SESSION["user_id"] = $user['id'];
+        $_SESSION["user_fullname"] = $user['fullname'];
+        $_SESSION["is_admin"] = $user['is_admin'];
+        
+        error_log("Login successful - User ID: " . $_SESSION["user_id"] . " Admin: " . $_SESSION["is_admin"]);
+        
+        header("Location: home.php");
+        exit();
+    } else {
+        $error_msg = "Invalid email or password.";
+    }
+    
+    $stmt->close();
+    $conn->close();
+}
 ?>
 
 <html>
   <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" 
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <style>
-      html {
-        background-color: #7ed957;
-        margin: auto;
-      }
-      body{
-        width: 100%;
-      }
-      .logo {
-        width: 70%;
-        margin-top: 80px;
-        margin-bottom: 20px;
-      }
-      .form_text{
-        width: 95%;
-        padding: 35px 25px;
-        margin: 8px 0;
-        font-size: 36px;
-        border-radius: 100px;
-        border: 0;
-      }
-      .nav_button{
-        text-align: center;
-        width: 90%;
-        background-color: white;
-        color: black;
-        font-weight: bold;
-        font-size: 50px;
-        border-radius: 100px;
-        padding: 20px 0;
-        margin: 15px 0;
-        outline: 0;
-        border: 0;
-      }
+  <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 lg:max-w-[900px]">
+    <div class="flex flex-col items-center w-full">
+      <img class="w-[70%] max-w-[400px] mt-[80px] mb-5 md:w-[60%] md:mt-10" 
+           src="smart-recycling-logo.jpg"/>
 
-
-      .bottom_menu{
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-      }
-      .bottom_menu .menu_item{
-        padding: 10px;
-        width: 20%;
-        display: inline-block;
-      }
-    </style>
-
-    <center style="width: 100%;">
-      <img class="logo" src="smart-recycling-logo.jpg"/>
-
-      <form method="POST">
-        <div style="height: 100px;"></div>
-
-        <input class="form_text" name="email" type="email" placeholder="Enter Email..." value=""/>
-        <input class="form_text" name="password" type="password" placeholder="Enter Password..." value=""/>
-        
-        <div style="height: 40px;"></div>
-
-        <input class="nav_button" type="submit" value="LOGIN"/>
-      </form>  
-    </center>
+      <form method="POST" class="w-full flex flex-col items-center mt-[50px] max-w-[600px] mx-auto">
+        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
+               name="email" 
+               type="email" 
+               placeholder="Enter Email..." />
+               
+        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
+               name="password" 
+               type="password" 
+               placeholder="Enter Password..." />
+      
+        <div class="h-[20px]"></div>
+      
+        <button type="submit" 
+                class="w-[90%] bg-white text-black font-bold text-[clamp(1.5rem,4vw,2rem)] rounded-full py-4 my-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
+          LOGIN
+        </button>
+      </form>
+    </div>
   </body>
 </html>
-
-
-<?php
-
-// Handle login form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = $_POST["email"];
-  $password = $_POST["password"]; 
-
-  include 'database.php';
-
-  // Prepare and execute SQL statement to check if credentials are valid
-  $sql = "SELECT * FROM tbl_user WHERE username = '$email' AND password = '$password' LIMIT 1";
-  $result = $conn->query($sql);
-
-  if ($result->num_rows > 0) {
-    // Credentials are valid, log in the user
-    $_SESSION["logged_in"] = true;
-
-    while($row = $result->fetch_assoc()) {
-      $_SESSION["user_id"] = $row['id'];
-      $_SESSION["user_fullname"] = (string)$row['fullname'];
-    }
-    
-    header("location: home.php");
-  } else {
-    // Credentials are invalid, display an error message
-    echo "<center>Invalid email or password.</center>";
-  }
-
-  // Close the connection
-  $conn->close();
-}
-
-?>

@@ -1,253 +1,315 @@
-<?php
-
-ob_clean();
-session_start();
-session_destroy();
-
-?>
+<?php ob_clean(); session_start(); session_destroy(); ?>
 
 <html>
   <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" 
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gemini-js@latest/dist/gemini.min.js"></script>
-    <meta charset="utf-8" />
-    <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="utils/main.css" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:400,700"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body>
-    <script>
-      let promptInput;
-      let historyElement;
-
-      const questionsFAQ = [
-        'How do I use the image recognition feature?',
-        'How does the app detect if something is recyclable?',
-        'What other features does this app offer?'
-      ];
-
-      function sendQuestion(userMessageIndex){
-        const answersFAQ = [
-          'Navigate to the image recognition section The user must take a photo using their device’s camera Once the image is captured. The app will process the image and analyze it. This may take a few seconds.After the image is processed, the app will display the result After the image is processed, the app will display the recognition results, such as identifying whether the object is recyclable  or providing further recommendations.Based on the results, it will proceed to the recommendation system.',
-          'The app first captures an image of the object. <br/>Using image recognition algorithms the app identifies the object in the image captured.This could be done by comparing features of the object (e.g., shape, color, texture) to a pre-trained database of common recyclable items (like plastic bottles, glass jars, or paper).Once the object is recognized, the app classifies it based on its material. The app uses the trained model to determine whether the object is made of recyclable materials (such as certain plastics, metals, glass, or paper).The app then checks a recycling database or set of rules that define which materials are recyclable.After analyzing the material, the app provides feedback to the user, stating whether the object is recyclable or not. It may also include details like which bin to place the item in , a recommendation system or how to properly dispose of it.',
-          'Chatbot Feature <br/>Recommendation system <br/>Object Recognition <br/>User Account setting'
-        ];
-        
-        const userMessage = userMessageIndex;
-
-        // Create UI for the new user / assistant messages pair
-        historyElement.innerHTML += `<div class="history-item user-role">
-          <div class="name"><i class="fa-solid fa-circle-user"></i></div>
-          <blockquote>` + questionsFAQ[userMessageIndex] + `</blockquote>
-        </div>
-        <div class="history-item model-role">
-          <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-          <blockquote>` + answersFAQ[userMessageIndex] + `</blockquote>
-        </div>`;
-
-        scrollToDocumentBottom();
-      }
-    </script>
 
     <style>
-      html {
-        background-color: #7ed957;
-        margin: auto;
+      .prose blockquote {
+        white-space: pre-line;
+        line-height: 1.2;
+        padding: 1rem;
       }
-      body{
-        width: 100%;
+      .prose blockquote ul {
+        margin-left: 1.5rem;
       }
-      .logo {
-        width: 30%;
-        margin-top: 30px;
-        margin-bottom: 20px;
-      }
-      .form_text{
-        width: 95%;
-        padding: 35px 25px;
-        margin: 8px 0;
-        font-size: 36px;
-        border-radius: 100px;
-        border: 0;
-      }
-      .nav_button{
-        text-align: center;
-        width: 90%;
-        background-color: white;
-        color: black;
-        font-weight: bold;
-        font-size: 50px;
-        border-radius: 100px;
-        padding: 20px 0;
-        margin: 15px 0;
-        outline: 0;
-        border: 0;
+      .main-point {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 0.75rem;
+        margin-bottom: 0.5rem;
+        
       }
 
-      #chat-history{
-        color: white;
-        text-align: left;
-        padding-bottom: 200px;
-      }
-      .faq_item{
-        background-color: white;
-        color: black;
-        width: fit-content;
-        padding: 10px 20px;
-        font-size: 14px;
-        border-radius: 100px;
-        margin: 10px;
-      }
-
-
-      .bottom_menu{
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-      }
-      .bottom_menu .menu_item{
-        padding: 10px;
-        width: 20%;
-        display: inline-block;
-      }
-      .userInput{
-        display: inline-block;
-        vertical-align: middle;
-        width: 74%;
-        padding: 20px 10px;
-        margin: 8px 0;
-        font-size: 16px;
-        border-radius: 100px;
-        border: 0;
-      }
-      .sendButton{
-        display: inline-block;
-        vertical-align: middle;
-        background-color: transparent;
-        color: white;
-        border: 0;
-        margin: 7px;
-        font-size: 30px;
+      .sub-point {
+        font-size: 1rem;
+        margin-left: 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
       }
     </style>
 
-    <center style="width: 100%;">
-      <img class="logo" src="smart-recycling-logo.jpg"/>
-
-      <div class="container">
-        <div id="chat-history"></div>
-      </div>
-      <div class="form-container bottom_menu">
-        <form id="form">
-          <input id="prompt" class="userInput" placeholder="Enter Question here..."/>
-          <button type="submit" class="sendButton"><i class="fa-solid fa-paper-plane"></i></button>
-        </form>
-        <template id="thumb-template">
-          <img class="thumb" />
-        </template>
-      </div>
-    </center>
-
-    <script type="module">
-      import {
-        getGenerativeModel,
-        scrollToDocumentBottom,
-        updateUI,
-      } from "./utils/shared.js";
-
+  </head>
+    <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 pb-24 lg:max-w-[900px]">
+      <div class="flex flex-col items-center w-full">
+        <img class="w-[40%] max-w-[300px] mt-[clamp(40px,8vh,80px)] mb-5" 
+             src="smart-recycling-logo.jpg"/>
   
-      promptInput = document.querySelector("#prompt");
-      historyElement = document.querySelector("#chat-history");
-      let chat;
+        <div class="container w-full">
+          <div id="chat-history" class="text-white text-left pb-[200px] mx-auto max-w-[600px]"></div>
+        </div>
+  
+        <div class="fixed bottom-[120px] left-0 right-0 z-40">
+          <form id="form" class="flex justify-between items-center max-w-[400px] mx-auto px-4 py-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 sm:max-w-[450px] md:max-w-[500px] lg:max-w-[550px]">
+            <input id="prompt" 
+                   class="w-[80%] px-3 py-2 text-sm rounded-full border-0 focus:outline-none sm:text-base md:text-lg" 
+                   placeholder="Enter Question here..."/>
+            <button type="submit" class="text-xl text-[#7ed957] hover:text-gray-400 transition-colors sm:text-2xl md:text-3xl">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+  
+        <div class="fixed bottom-0 left-0 right-0 bg-white py-4 shadow-md z-50 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[720px] lg:rounded-t-2xl">
+          <div class="flex justify-around max-w-[720px] mx-auto lg:px-5">
+            <a href="home.php" class="flex flex-col items-center">
+              <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                <i class="fa-solid fa-house"></i>
+              </div>
+              <span class="text-xs text-[#7ed957] mt-1">Home</span>
+            </a>
+            <a href="camera.php" class="flex flex-col items-center">
+              <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                <i class="fa-solid fa-camera-retro"></i>
+              </div>
+              <span class="text-xs text-[#7ed957] mt-1">Camera</span>
+            </a>
+            <a href="chatbot.php" class="flex flex-col items-center">
+              <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <span class="text-xs text-[#7ed957] mt-1">Chatbot</span>
+            </a>
+            <a href="index.php" class="flex flex-col items-center">
+              <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                <i class="fa-solid fa-right-from-bracket"></i>
+              </div>
+              <span class="text-xs text-[#7ed957] mt-1">Logout</span>
+            </a>
+          </div>
+        </div>
+    
+      <script>
 
-      document
-        .querySelector("#form")
-        .addEventListener("submit", async (event) => {
-          event.preventDefault();
-
-          if (!chat) {
-            const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
-            chat = model.startChat({
-              generationConfig: {
-                maxOutputTokens: 100,
-              },
+        function scrollToDocumentBottom() {
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: 'smooth'
             });
           }
 
-          const userMessage = promptInput.value;
-          promptInput.value = "";
+        // Move FAQ handling to global scope
+        let historyElement = document.querySelector("#chat-history");
 
-          // Create UI for the new user / assistant messages pair
-          historyElement.innerHTML += `<div class="history-item user-role">
-            <div class="name"><i class="fa-solid fa-circle-user"></i></div>
-            <blockquote>${userMessage}</blockquote>
-          </div>
-          <div class="history-item model-role">
-            <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-            <blockquote></blockquote>
-          </div>`;
+        const questionsFAQ = [
+          'How do I use the image recognition feature?',
+          'How does the app detect if something is recyclable?',
+          'What other features does this app offer?'
+        ];
 
-          scrollToDocumentBottom();
-          const resultEls = document.querySelectorAll(
-            ".model-role > blockquote",
-          );
-          await updateUI(
-            resultEls[resultEls.length - 1],
-            () => chat.sendMessageStream(userMessage),
-            true,
-          );
-        });
+        function sendQuestion(userMessageIndex) {
 
-      async function startChat(){
-        if (!chat) {
-          const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
-          chat = model.startChat({
-            generationConfig: {
-              maxOutputTokens: 100,
-            },
-          });
+          const answersFAQ = [
+            `How to use Image Recognition:
+              • Open the camera feature
+              • Take a photo of the item using your device's camera
+              • Wait while the app processes the image (few seconds)
+              • Review the recognition results
+              • Get recyclability status and recommendations
+              • Follow the suggested disposal instructions`,
+
+            `How Our Recognition Works:
+
+              • Takes a photo of your item
+              • Analyzes the item's features:
+                - Shape
+                - Color
+              
+              • Uses AI to identify the item
+              • Determines if item is recyclable
+              • Provides DIY recycling tips:
+                - How to recycle
+                - How to dispose
+                - Where to recycle/dispose/donate`,
+
+            `Main App Features:
+              • Chatbot Assistant
+              • AI Recognition System
+              • DIY Project Recommendations`
+          ];
+
+          if (historyElement) {
+            historyElement.innerHTML += `
+              <div class="bg-white/20 rounded-lg p-4 mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="bg-green-500 p-2 rounded-full">
+                    <i class="fa-solid fa-circle-user text-white"></i>
+                  </div>
+                  <span class="text-white font-bold">User</span>
+                </div>
+                <div class="prose prose-invert">
+                  <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
+                    ${questionsFAQ[userMessageIndex]}
+                  </blockquote>
+                </div>
+              </div>`;
+
+            // Add AI response
+            historyElement.innerHTML += `
+              <div class="bg-white/20 rounded-lg p-4 mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="bg-green-500 p-2 rounded-full">
+                    <i class="fa-solid fa-robot text-white"></i>
+                  </div>
+                  <span class="text-white font-bold">AI Assistant</span>
+                </div>
+                <div class="prose prose-invert">
+                  <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
+                    ${answersFAQ[userMessageIndex].replace(/•/g, '\n•').replace(/-/g, '\n -')}
+                  </blockquote>
+                </div>
+              </div>`;
+
+            scrollToDocumentBottom();
+          }
         }
+      </script>
 
-        const userMessage = "Hello Bot!";
-        promptInput.value = "";
+      <script type="module">
+        // 1. Import utilities
+        import {
+          getGenerativeModel,
+          scrollToDocumentBottom,
+          updateUI,
+        } from "./utils/shared.js";
+      
+        // 2. Global variables
+        let promptInput = document.querySelector("#prompt");
+        let historyElement = document.querySelector("#chat-history");
+        let chat;
+      
+        // 3. System prompt
+        const systemPrompt = {
+          parts: [{
+            text: `Format responses as follows:
 
-        // Create UI for the new user / assistant messages pair
-        historyElement.innerHTML += `<div class="history-item user-role">
-          <div class="name"><i class="fa-solid fa-circle-user"></i></div>
-          <blockquote>${userMessage}</blockquote>
-        </div>
-        <div class="history-item model-role">
-          <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-          <blockquote></blockquote>
-        </div>`;
+            1. Start with a clear title/overview
+            2. Use # for main points
+            3. Use >> for sub-points
+            4. Add line breaks between sections
+            5. Example format:
 
-        historyElement.innerHTML += `<center><h2>FAQ from Users</h2></center>`;
+            OVERVIEW
+            # Main point 1
+            >> Sub detail
+            # Main point 2
+            >> Sub detail A
+            >> Sub detail B
+            
+            
+            Note: Do not bold or italicize text.`
+          }]
+        };
+      
+        // 4. Chat initialization
+        document.querySelector("#form").addEventListener("submit", async (event) => {
+          event.preventDefault();
 
-        questionsFAQ.forEach((element, i) => {
-          historyElement.innerHTML += `<center><div class="faq_item" onclick="sendQuestion(` + i + `);">` + element + `</div></center>`;
+          try {
+            const userInput = promptInput.value;
+            
+            // Format message correctly for Gemini API
+            const userMessage = {
+              parts: [{
+                text: userInput
+              }]
+            };
+            
+            promptInput.value = "";
+
+            // Add response text processing
+            const processResponse = (text) => {
+              return text
+                .replace(/^#\s(.+)$/gm, '<div class="main-point">• $1</div>') // Main points
+                .replace(/^>>\s(.+)$/gm, '<div class="sub-point">- $1</div>') // Sub points
+                .replace(/\n{3,}/g, '\n\n'); // Clean spacing
+            };
+
+            // Update UI with user message first
+            historyElement.innerHTML += `
+              <div class="bg-white/20 rounded-lg p-4 mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="bg-green-500 p-2 rounded-full">
+                    <i class="fa-solid fa-circle-user text-white"></i>
+                  </div>
+                  <span class="text-white font-bold">User</span>
+                </div>
+                <div class="prose prose-invert">
+                  <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
+                    ${userInput}
+                  </blockquote>
+                </div>
+              </div>`;
+
+            // Get AI response
+            const response = await chat.sendMessage(userMessage.parts[0].text);
+            const responseText = response.response.text();
+
+            // Update UI with AI response
+            historyElement.innerHTML += `
+              <div class="bg-white/20 rounded-lg p-4 mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="bg-green-500 p-2 rounded-full">
+                    <i class="fa-solid fa-robot text-white"></i>
+                  </div>
+                  <span class="text-white font-bold">AI Assistant</span>
+                </div>
+                <div class="prose prose-invert">
+                  <blockquote class="text-white/90 leading-relaxed">
+                    ${processResponse(responseText)}
+                  </blockquote>
+                </div>
+              </div>`;
+
+            scrollToDocumentBottom();
+          } catch (error) {
+            console.error("Chat error:", error);
+          }
         });
-
-        scrollToDocumentBottom();
-        const resultEls = document.querySelectorAll(
-          ".model-role > blockquote",
-        );
-        await updateUI(
-          resultEls[resultEls.length - 1],
-          () => chat.sendMessageStream(userMessage),
-          true,
-        );
-      }
-
-      startChat();
-    </script>
-  </body>
+      
+        // 5. Initial chat setup
+        async function startChat() {
+          try {
+            if (!chat) {
+              const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
+              chat = model.startChat({
+                generationConfig: {
+                  maxOutputTokens: 1000,
+                  temperature: 0.7,
+                },
+                history: [{
+                  role: "user",
+                  parts: systemPrompt.parts
+                }]
+              });
+            }
+      
+            // Display FAQ section
+            historyElement.innerHTML = `<center><h2 class="text-white mb-4">FAQ from Users</h2></center>`;
+      
+            questionsFAQ.forEach((element, i) => {
+              historyElement.innerHTML += `
+                <center>
+                  <div class="faq_item bg-white/20 rounded-lg p-3 mb-2 cursor-pointer hover:bg-white/30" 
+                       onclick="sendQuestion(${i});">
+                    ${element}
+                  </div>
+                </center>`;
+            });
+      
+            scrollToDocumentBottom();
+          } catch (error) {
+            console.error("Start chat error:", error);
+          }
+        }
+      
+        startChat();
+      </script>
+    </body>
 </html>
-
-

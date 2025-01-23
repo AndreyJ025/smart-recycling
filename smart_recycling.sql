@@ -142,3 +142,15 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Add to tbl_remit
+ALTER TABLE tbl_remit ADD COLUMN points INT DEFAULT 0;
+
+-- Add to tbl_user
+ALTER TABLE tbl_user ADD COLUMN total_points INT DEFAULT 0;
+
+-- Add to tbl_user
+ALTER TABLE tbl_user ADD COLUMN is_admin BOOLEAN DEFAULT 0;
+
+-- Set first user as admin
+UPDATE tbl_user SET is_admin = 1 WHERE id = 1; 

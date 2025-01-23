@@ -1,7 +1,14 @@
 <?php
-
 session_start();
 header('Access-Control-Allow-Origin: *');
+
+require_once __DIR__ . '/vendor/serpapi/google-search-results-php/google-search-results.php';
+
+// Load config
+$config = require __DIR__ . '/config/serpapi-config.php';
+
+// Initialize search client
+$serpapi = new GoogleSearchResults($config['api_key']);
 
 ?>
 
@@ -9,217 +16,122 @@ header('Access-Control-Allow-Origin: *');
     <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script>
-
-        <!-- Load TensorFlow.js. This is required to use MobileNet. -->
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"> </script>
-        <!-- Load the MobileNet model. -->
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"> </script>
-
-        <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"></script>
         <script src="https://cdn.jsdelivr.net/npm/gemini-js@latest/dist/gemini.min.js"></script>
-
+        <script src="https://cdn.tailwindcss.com"></script>
         <meta charset="utf-8" />
         <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
-        <link rel="stylesheet" href="utils/main.css" />
-        <link
-            href="https://fonts.googleapis.com/css?family=Roboto:400,700"
-            rel="stylesheet"
-            type="text/css"
-        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body>
+    <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 pb-24 lg:max-w-[900px]">
         <script>
             function showTab(n) {
-                var x = document.getElementsByClassName("tab-content-item");
-                for (i = 0; i < x.length; i++) {
-                    x[i].style.display = "none";
+                var tabs = document.getElementsByClassName("tab-content-item");
+                for (var i = 0; i < tabs.length; i++) {
+                    tabs[i].classList.add('hidden');
                 }
+                document.getElementById("tab" + (n + 1)).classList.remove('hidden');
                 
-                document.getElementById("tab" + (n + 1)).style.display = "block";
+                // Update active tab button styling
+                var buttons = document.querySelectorAll('.tab-container button');
+                buttons.forEach((btn, index) => {
+                    if (index === n) {
+                        btn.classList.add('bg-green-600');
+                    } else {
+                        btn.classList.remove('bg-green-600');
+                    }
+                });
             }
         </script>
 
-        <style>
-        html {
-            background-color: #7ed957;
-            margin: auto;
-        }
-        body{
-            width: 100%;
-        }
-        .logo {
-            width: 10%;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-        .form_text{
-            width: 95%;
-            padding: 35px 25px;
-            margin: 8px 0;
-            font-size: 36px;
-            border-radius: 100px;
-            border: 0;
-        }
-        .nav_button{
-            text-align: center;
-            width: 90%;
-            background-color: white;
-            color: black;
-            font-weight: bold;
-            font-size: 50px;
-            border-radius: 100px;
-            padding: 20px 0;
-            margin: 15px 0;
-            outline: 0;
-            border: 0;
-        }
-        .text_result{
-            text-align: center;
-            width: 90%;
-            background-color: white;
-            color: black;
-            font-weight: bold;
-            font-size: 50px;
-            padding: 20px 0;
-            margin: 5px 0;
-            outline: 0;
-            border: 0;
-        }
-        .text_result_light{
-            color: black;
-            font-weight: bold;
-            padding: 10px 10px;
-            margin: 15px 0;
-            outline: 0;
-            border: 1px solid black;
-            width: fit-content;
-        }
-            
+        <center class="w-full">
+            <img class="w-[40%] max-w-[300px] mt-[clamp(40px,8vh,80px)] mb-5 md:w-[60%] md:mt-10" src="smart-recycling-logo.jpg"/>
 
-        #chat-history, #chat-history-sortation{
-            color: white;
-            text-align: left;
-            padding-bottom: 200px;
-        }
-        .faq_item{
-            background-color: white;
-            color: black;
-            width: fit-content;
-            padding: 10px 20px;
-            font-size: 14px;
-            border-radius: 100px;
-            margin: 10px;
-        }
-
-
-        .bottom_menu{
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-        }
-        .bottom_menu .menu_item{
-            padding: 10px;
-            width: 20%;
-            display: inline-block;
-        }
-        .userInput{
-            display: inline-block;
-            vertical-align: middle;
-            width: 74%;
-            padding: 20px 10px;
-            margin: 8px 0;
-            font-size: 16px;
-            border-radius: 100px;
-            border: 0;
-        }
-        .sendButton{
-            display: inline-block;
-            vertical-align: middle;
-            background-color: transparent;
-            color: white;
-            border: 0;
-            margin: 7px;
-            font-size: 30px;
-        }
-
-        .tab-header {
-            display: grid;
-            grid-template-columns: auto auto auto;
-        }
-        .tab-header-button {
-            background-color: #56ab0e;
-            color: white;
-            border: 1px solid #ddd;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .tab-header-button:hover {
-            background-color: #ddd;
-        }
-
-        .tab-content-item {
-            display: none;
-        }
-
-        .show {
-            display: block;
-        }
-        </style>
-
-        <center style="width: 100%;">
-            <img class="logo" src="smart-recycling-logo.jpg"/>
-
-            <div id="captureContainer" style="display: block;">
-                <video id="video" width="98%" height="480" autoplay></video>
-                <button id="captureButton" class="nav_button"><i class="fa-solid fa-camera"></i></button>
+            <div id="captureContainer" class="block">
+                <video id="video" class="w-[98%] h-[480px]" playsinline autoplay></video>
+                <button id="captureButton" class="w-[80%] max-w-[400px] bg-white text-black font-bold text-[clamp(0.8rem,2.5vw,1.5rem)] rounded-full py-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200 my-4">
+                    <i class="fa-solid fa-camera"></i>
+                </button>
             </div>
 
-            <div id="captureResultContainer" style="width: 100%; display: none;">
-                <canvas id="canvas" width="350" height="470"
-                    style="width: 30%; display: inline-block; vertical-align: top;"></canvas>
-                <div id="captureResultPrediction" 
-                    style="width: 65%; display: inline-block;"></div>
+            <div id="captureResultContainer" class="w-full hidden">
+                <canvas id="canvas" width="350" height="470" class="w-[30%] inline-block align-top"></canvas>
+                <div id="captureResultPrediction" class="w-[65%] inline-block"></div>
                 <br/>
-                <button id="reCaptureButton" class="nav_button"
-                    style="position: fixed; bottom: 2%; left: 2%; width: 70px; font-size: 2em;"><i class="fa-solid fa-camera"></i></button>
+                <button id="reCaptureButton" class="fixed bottom-[2%] left-[2%] w-[70px] text-[2em] bg-white text-black font-bold rounded-full py-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
+                    <i class="fa-solid fa-camera"></i>
+                </button>
                 <br/>
 
-                <div id="low-level-indicator" style="background-color: darkgreen; color: white; display: none; width: fit-content;padding: 5px 8px;margin: 8px;border-radius: 10px;">
+                <div id="low-level-indicator" class="hidden bg-green-800 text-white p-2 rounded-lg mx-2 my-2 inline-block">
                     Low Accuracy Level: You can rescan try rescanning again. This is noted and will be incorporated soon...
                 </div>
                 
-                <h2>Projects Recommendations</h2>
-                <div class="container">
+                <h2 class="text-white text-[clamp(1.2rem,3vw,2rem)] font-bold my-4">Projects Recommendations</h2>
+                
+                <div class="container mx-auto">
                     <div class="tab-container">
-                        <div class="tab-header">
-                            <button class="tab-header-button" onclick="showTab(0)">PROJECTS<br/>IDEAS</button>
-                            <button class="tab-header-button" onclick="showTab(1)">IMAGE<br/>IDEAS</button>
-                            <button class="tab-header-button" onclick="showTab(2)">SORTATION<br/>CENTER</button>
+                        <!-- Tab Navigation -->
+                        <div class="flex mb-4">
+                            <button onclick="showTab(0)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
+                                PROJECTS<br/>IDEAS
+                            </button>
+                            <button onclick="showTab(1)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
+                                IMAGE<br/>IDEAS
+                            </button>
+                            <button onclick="showTab(2)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
+                                SORTATION<br/>CENTER
+                            </button>
                         </div>
-                        <div class="tab-content">
+
+                        <!-- Tab Content -->
+                        <div class="bg-white/10 rounded-lg p-4">
                             <div id="tab1" class="tab-content-item">
-                                <div id="chat-history"></div>
+                                <div id="chat-history" class="text-white text-left pb-[200px]"></div>
                             </div>
-                            <div id="tab2" class="tab-content-item">
-                                <div id="chat-images"></div>
+                            <div id="tab2" class="tab-content-item hidden">
+                                <div id="chat-images" class="grid grid-cols-2 gap-4"></div>
                             </div>
-                            <div id="tab3" class="tab-content-item">
-                                <div id="chat-history-sortation"></div>
+                            <div id="tab3" class="tab-content-item hidden">
+                                <div id="chat-history-sortation" class="text-white text-left pb-[200px]"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </center>
 
-        <!-- Replace this with your image. Make sure CORS settings allow reading the image! -->
-        <!-- <img id="img" src="plastic-bottle.webp"></img> -->
+        <!-- Bottom Navigation Menu -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white py-4 shadow-md z-50 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[720px] lg:rounded-t-2xl">
+            <div class="flex justify-around max-w-[720px] mx-auto lg:px-5">
+                <a href="home.php" class="flex flex-col items-center">
+                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
+                    <span class="text-xs text-[#7ed957] mt-1">Home</span>
+                </a>
+                <a href="camera.php" class="flex flex-col items-center">
+                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                        <i class="fa-solid fa-camera-retro"></i>
+                    </div>
+                    <span class="text-xs text-[#7ed957] mt-1">Camera</span>
+                </a>
+                <a href="chatbot.php" class="flex flex-col items-center">
+                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <span class="text-xs text-[#7ed957] mt-1">Chatbot</span>
+                </a>
+                <a href="index.php" class="flex flex-col items-center">
+                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
+                    <span class="text-xs text-[#7ed957] mt-1">Logout</span>
+                </a>
+            </div>
+        </div>
 
-        
         <script type="module">
             import {
                 getGenerativeModel,
@@ -235,66 +147,67 @@ header('Access-Control-Allow-Origin: *');
 
             async function startChat(messagetext){
                 if (!chat) {
-                const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
-                chat = model.startChat({
-                    generationConfig: {
-                    maxOutputTokens: 5000,
-                    },
-                });
+                    const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
+                    chat = model.startChat({
+                        generationConfig: {
+                            maxOutputTokens: 5000,
+                        },
+                    });
                 }
-
+            
                 const userMessage = messagetext;
-                const historyMessage = historyElement.innerHTML;
-
-                // Create UI for the new user / assistant messages pair
-                // // <div class="history-item user-role">
-                // // <div class="name"><i class="fa-solid fa-circle-user"></i></div>
-                // // <blockquote>${userMessage}</blockquote>
-                // // </div>
-
-                historyElement.innerHTML += `<div class="history-item model-role">
-                    <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-                    <blockquote></blockquote>
-                </div>`;
-
-                // historyElement.insertAdjacentHTML("afterbegin", `<div class="history-item model-role">
-                //     <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-                //     <blockquote></blockquote>
-                // </div>`);
-
+                
+                historyElement.innerHTML += `
+                    <div class="bg-white/20 rounded-lg p-4 mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="bg-green-500 p-2 rounded-full">
+                                <i class="fa-solid fa-robot text-white"></i>
+                            </div>
+                            <span class="text-white font-bold">AI Assistant</span>
+                        </div>
+                        <div class="prose prose-invert">
+                            <blockquote class="text-white/90 leading-relaxed"></blockquote>
+                        </div>
+                    </div>
+                `;
+            
                 scrollToDocumentBottom();
-                const resultEls = document.querySelectorAll(
-                    ".model-role > blockquote",
-                );
+                const resultEls = document.querySelectorAll(".prose > blockquote");
                 await updateUI(
                     resultEls[resultEls.length - 1],
                     () => chat.sendMessageStream(userMessage),
                     true,
                 );
             }
-
+            
             async function startChatSortation(messagetext){
                 if (!chat) {
-                const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
-                chat = model.startChat({
-                    generationConfig: {
-                    maxOutputTokens: 5000,
-                    },
-                });
+                    const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
+                    chat = model.startChat({
+                        generationConfig: {
+                            maxOutputTokens: 5000,
+                        },
+                    });
                 }
-
+            
                 const userMessage = messagetext;
-                const historyMessage = historySortationElement.innerHTML;
-
-                historySortationElement.innerHTML += `<div class="history-item model-role">
-                    <div class="name" style="color: greenyellow;"><i class="fa-solid fa-robot"></i></div>
-                    <blockquote></blockquote>
-                </div>`;
-
+            
+                historySortationElement.innerHTML += `
+                    <div class="bg-white/20 rounded-lg p-4 mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="bg-green-500 p-2 rounded-full">
+                                <i class="fa-solid fa-robot text-white"></i>
+                            </div>
+                            <span class="text-white font-bold">AI Assistant</span>
+                        </div>
+                        <div class="prose prose-invert">
+                            <blockquote class="text-white/90 leading-relaxed"></blockquote>
+                        </div>
+                    </div>
+                `;
+            
                 scrollToDocumentBottom();
-                const resultEls = document.querySelectorAll(
-                    ".model-role > blockquote",
-                );
+                const resultEls = document.querySelectorAll(".prose > blockquote");
                 await updateUI(
                     resultEls[resultEls.length - 1],
                     () => chat.sendMessageStream(userMessage),
@@ -316,48 +229,94 @@ header('Access-Control-Allow-Origin: *');
             let stream;
 
 
+            // Find the captureRecognize() function and modify it:
+            
             function captureRecognize(){
-                const img = document.getElementById('canvas');
-
+                // Clear previous results first
                 captureResultPrediction.innerHTML = "";
+                historyElement.innerHTML = "";
+                historySortationElement.innerHTML = "";
+                historyImagesElement.innerHTML = "";
                 captureButton.innerHTML = "Loading...";
-
-                // Load the model.
+                
+                // Reset chat instance
+                chat = null;
+            
+                const img = document.getElementById('canvas');
+                
                 mobilenet.load().then(model => {
-                    // Classify the image.
                     model.classify(img).then(predictions => {
-                        console.log('Predictions: ');
-                        console.log(predictions);
-
+                        console.log('Predictions: ', predictions);
+            
                         predictions.forEach((item, index)=>{
                             if(index < 1) {
                                 var nameArr = item.className.split(',');
                                 var rawProbability = parseFloat(item.probability) * 100;
+                                var itemName = nameArr[0];
+            
+                                captureResultPrediction.innerHTML += `
+                                    <div class="bg-white/20 p-4 rounded-lg mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="bg-green-500 p-3 rounded-full">
+                                                <i class="fa-solid fa-recycle text-white text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-white font-bold text-lg">${itemName}</p>
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-24 h-2 bg-white/20 rounded-full overflow-hidden">
+                                                        <div class="h-full bg-green-500 rounded-full" style="width: ${rawProbability}%"></div>
+                                                    </div>
+                                                    <p class="text-white/80 text-sm">${rawProbability.toFixed(2)}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+            
+                                // Customize prompts based on item detected
+                                const projectPrompt = `As a recycling expert, provide 3 creative DIY project ideas using ${itemName}.
+                                    Format your response exactly like this without any other text:
 
-                                captureResultPrediction.innerHTML += '<p class="text_result" style="font-size: 1em;">' + nameArr[0] + '</p>'
-                                    + '<p class="text_result_light" style="font-size: 1em;">' + rawProbability.toFixed(2) + '%</p>';
+                                    Project 1: [project name]
+                                    Materials:
+                                    - [list materials]
+                                    Steps:
+                                    1. [step details]
+                                    Estimated Time: [time]
+                                    Difficulty: [easy/medium/hard]
 
-                                startChat("Recycling Project Ideas for " + nameArr[0] + " and where to buy " + nameArr[0]);
-                                startChatSortation("Philippines sortation center with address for " + nameArr[0] + " recycling");
-                                //startChatSortation("Philippines sortation center with address for plastic bottle recycling");
+                                    Project 2: [project name]
+                                    [same format]
 
+                                    Project 3: [project name]
+                                    [same format]
+
+                                    Where to buy ${itemName}:
+                                    - [locations]
+                                    Note: Do not include any introduction of what you are like "I am a recycling expert" or "I am a bot".`;
+            
+                                const sortationPrompt = `List recycling centers in the Philippines that accept ${itemName}.
+                                    Include for each center:
+                                    - Complete address
+                                    - Contact information
+                                    - Operating hours
+                                    - Types of ${itemName} they accept
+                                    - Any special requirements for dropping off`;
+            
+                                const imagePrompt = `Find me DIY recycling project images using ${itemName}`;
+            
+                                startChat(projectPrompt);
+                                startChatSortation(sortationPrompt); 
+                                searchImages(imagePrompt);
+            
                                 if(rawProbability < 30){
                                     lowLevelIndicatorElement.style.display = "block";
-                                }else{
+                                } else {
                                     lowLevelIndicatorElement.style.display = "none";
                                 }
-
-                                searchImages("Recycling Project Ideas for " + nameArr[0])
-                                .then(imageLinks => {
-                                    console.log(imageLinks);
-                                    //historyImagesElement.innerHTML = imageLinks;
-                                })
-                                .catch(error => {
-                                    console.error(error);
-                                });
                             }
-                        })
-
+                        });
+            
                         captureContainer.style.display = "none";
                         captureResultContainer.style.display = "block";
                     });
@@ -388,27 +347,85 @@ header('Access-Control-Allow-Origin: *');
                 };
             }
 
+            // async function searchImages(query) {
+            //     try {
+            //         // Prepare search parameters
+            //         $params = [
+            //             "q" => $query,
+            //             "tbm" => "isch", // Image search
+            //             "num" => "8"     // Number of results
+            //         ];
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(s => {
-                stream = s;
-                video.srcObject = s;
-            })
-            .catch(err => {
-                console.error('Error accessing camera:', err);
-            });
-            captureButton.addEventListener('click', () => {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const capturedImage = canvas.toDataURL('image/png');
-                // Do something with the captured image, e.g., save it or send it to a server
-                // console.log(capturedImage);
+            //         // Execute search
+            //         $results = $serpapi->get_json($params);
+                    
+            //         // Display results
+            //         if (isset($results->images_results)) {
+            //             historyImagesElement.innerHTML = formatImageResults($results->images_results);
+            //         }
+            //     } catch(Exception $e) {
+            //         console.error('Search error:', $e->getMessage());
+            //     }
+            // }
 
-                captureRecognize();
-            });
-            reCaptureButton.addEventListener('click', () => {
-                captureContainer.style.display = "block";
-                captureResultContainer.style.display = "none";
-                captureButton.innerHTML = '<i class="fa-solid fa-camera"></i>';
+            // function formatImageResults($images) {
+            //     return `
+            //         <div class="grid grid-cols-2 gap-4">
+            //             ${images.map(img => `
+            //                 <img src="${img.thumbnail}" 
+            //                     alt="${img.title}"
+            //                     class="w-full rounded-lg shadow-lg hover:scale-105 transition-transform" />
+            //             `).join('')}
+            //         </div>
+            //     `;
+            // }
+
+            async function initCamera() {
+                try {
+                    const constraints = { 
+                        video: { 
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        } 
+                    };
+                    
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    video.srcObject = stream;
+                    
+                    // Wait for video to be ready
+                    await new Promise((resolve) => {
+                        video.onloadedmetadata = () => {
+                            resolve();
+                        };
+                    });
+                    
+                    video.play();
+                    captureButton.disabled = false;
+                    
+                } catch (err) {
+                    console.error('Camera error:', err);
+                    alert('Could not access camera. Please ensure camera permissions are granted.');
+                }
+            }
+            
+            // Update event listeners
+            document.addEventListener('DOMContentLoaded', () => {
+                initCamera();
+                
+                captureButton.addEventListener('click', () => {
+                    if (stream) {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        captureRecognize();
+                    }
+                });
+                
+                reCaptureButton.addEventListener('click', () => {
+                    captureContainer.style.display = "block";
+                    captureResultContainer.style.display = "none";
+                    captureButton.innerHTML = '<i class="fa-solid fa-camera"></i>';
+                    initCamera(); // Reinitialize camera
+                });
             });
 
             showTab(0);
