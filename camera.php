@@ -1,136 +1,241 @@
-<?php
+<?php 
 session_start();
 header('Access-Control-Allow-Origin: *');
-
 require_once __DIR__ . '/vendor/serpapi/google-search-results-php/google-search-results.php';
-
-// Load config
 $config = require __DIR__ . '/config/serpapi-config.php';
-
-// Initialize search client
 $serpapi = new GoogleSearchResults($config['api_key']);
-
 ?>
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"></script>
         <script src="https://cdn.jsdelivr.net/npm/gemini-js@latest/dist/gemini.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
-        <meta charset="utf-8" />
-        <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 pb-24 lg:max-w-[900px]">
-        <script>
-            function showTab(n) {
-                var tabs = document.getElementsByClassName("tab-content-item");
-                for (var i = 0; i < tabs.length; i++) {
-                    tabs[i].classList.add('hidden');
-                }
-                document.getElementById("tab" + (n + 1)).classList.remove('hidden');
-                
-                // Update active tab button styling
-                var buttons = document.querySelectorAll('.tab-container button');
-                buttons.forEach((btn, index) => {
-                    if (index === n) {
-                        btn.classList.add('bg-green-600');
-                    } else {
-                        btn.classList.remove('bg-green-600');
-                    }
-                });
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            .bg-overlay {
+                background: url('background.jpg');
+                min-height: 100vh;
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                position: relative;
             }
-        </script>
-
-        <center class="w-full">
-            <img class="w-[40%] max-w-[300px] mt-[clamp(40px,8vh,80px)] mb-5 md:w-[60%] md:mt-10" src="smart-recycling-logo.jpg"/>
-
-            <div id="captureContainer" class="block">
-                <video id="video" class="w-[98%] h-[480px]" playsinline autoplay></video>
-                <button id="captureButton" class="w-[80%] max-w-[400px] bg-white text-black font-bold text-[clamp(0.8rem,2.5vw,1.5rem)] rounded-full py-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200 my-4">
-                    <i class="fa-solid fa-camera"></i>
-                </button>
-            </div>
-
-            <div id="captureResultContainer" class="w-full hidden">
-                <canvas id="canvas" width="350" height="470" class="w-[30%] inline-block align-top"></canvas>
-                <div id="captureResultPrediction" class="w-[65%] inline-block"></div>
-                <br/>
-                <button id="reCaptureButton" class="fixed bottom-[2%] left-[2%] w-[70px] text-[2em] bg-white text-black font-bold rounded-full py-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
-                    <i class="fa-solid fa-camera"></i>
-                </button>
-                <br/>
-
-                <div id="low-level-indicator" class="hidden bg-green-800 text-white p-2 rounded-lg mx-2 my-2 inline-block">
-                    Low Accuracy Level: You can rescan try rescanning again. This is noted and will be incorporated soon...
-                </div>
-                
-                <h2 class="text-white text-[clamp(1.2rem,3vw,2rem)] font-bold my-4">Projects Recommendations</h2>
-                
-                <div class="container mx-auto">
-                    <div class="tab-container">
-                        <!-- Tab Navigation -->
-                        <div class="flex mb-4">
-                            <button onclick="showTab(0)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
-                                PROJECTS<br/>IDEAS
-                            </button>
-                            <button onclick="showTab(1)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
-                                IMAGE<br/>IDEAS
-                            </button>
-                            <button onclick="showTab(2)" class="flex-1 bg-[#56ab0e] text-white border border-white px-4 py-3 text-sm font-bold hover:bg-green-600 transition-all duration-200">
-                                SORTATION<br/>CENTER
-                            </button>
-                        </div>
-
-                        <!-- Tab Content -->
-                        <div class="bg-white/10 rounded-lg p-4">
-                            <div id="tab1" class="tab-content-item">
-                                <div id="chat-history" class="text-white text-left pb-[200px]"></div>
-                            </div>
-                            <div id="tab2" class="tab-content-item hidden">
-                                <div id="chat-images" class="grid grid-cols-2 gap-4"></div>
-                            </div>
-                            <div id="tab3" class="tab-content-item hidden">
-                                <div id="chat-history-sortation" class="text-white text-left pb-[200px]"></div>
-                            </div>
-                        </div>
+            .bg-overlay::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+            }
+            .bg-overlay > div {
+                position: relative;
+                z-index: 1;
+            }
+            .tab-btn {
+                position: relative;
+                transition: all 0.3s ease;
+            }
+            .tab-btn.active {
+                background: rgba(255, 255, 255, 0.1);
+                transform: translateY(-2px);
+            }
+            .tab-btn.active::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: #22c55e;
+            }
+            .tab-content {
+                min-height: 300px;
+                backdrop-filter: blur(8px);
+            }
+            @media (max-width: 640px) {
+                .tab-container {
+                    flex-direction: column;
+                }
+                .tab-btn {
+                    width: 100%;
+                }
+            }
+        </style>
+    </head>
+    <body class="font-[Poppins]">
+        <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex-shrink-0 flex items-center gap-3">
+                        <img src="smart-recycling-logo.jpg" alt="Smart Recycling Logo" class="h-10">
+                        <h1 class="text-[#22c55e] text-2xl font-bold">EcoLens</h1>
+                    </div>
+                    
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-4">
+                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
+                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
+    
+                    <!-- Mobile Menu Button -->
+                    <div class="md:hidden">
+                        <button onclick="toggleMenu()" class="text-white p-2">
+                            <i class="fa-solid fa-bars text-2xl"></i>
+                        </button>
                     </div>
                 </div>
+    
+                <!-- Mobile Menu Panel -->
+                <div id="mobileMenu" class="hidden md:hidden mt-2">
+                    <div class="flex flex-col space-y-2">
+                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
+                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
+                </div>
             </div>
-        </center>
-
-        <!-- Bottom Navigation Menu -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white py-4 shadow-md z-50 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[720px] lg:rounded-t-2xl">
-            <div class="flex justify-around max-w-[720px] mx-auto lg:px-5">
-                <a href="home.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-house"></i>
+        </nav>
+    
+        <div class="bg-overlay">
+            <div class="min-h-screen flex items-center justify-center px-4 pt-20">
+                <div class="w-full max-w-4xl">
+                    <!-- Replace Camera Interface section -->
+                    <div id="captureContainer" class="w-full max-w-[500px] mx-auto space-y-4">
+                        <video id="video" class="w-full h-auto rounded-2xl shadow-lg" playsinline autoplay></video>
+                        <canvas id="canvas" class="hidden"></canvas>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="captureButton" class="w-full bg-white text-black font-bold rounded-full py-4 hover:bg-opacity-90 transition-all">
+                                <div class="flex flex-col items-center">
+                                    <i class="fa-solid fa-camera text-[clamp(1.2rem,4vw,2rem)]"></i>
+                                    <span class="text-sm mt-1">Capture</span>
+                                </div>
+                            </button>
+                            
+                            <label class="w-full cursor-pointer">
+                                <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                                <div class="w-full bg-white text-black font-bold rounded-full py-4 hover:bg-opacity-90 transition-all text-center">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fa-solid fa-upload text-[clamp(1.2rem,4vw,2rem)]"></i>
+                                        <span class="text-sm mt-1">Upload</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Home</span>
-                </a>
-                <a href="camera.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-camera-retro"></i>
+    
+                    <!-- Results Interface -->
+                    <div id="captureResultContainer" class="w-full max-w-[1000px] mx-auto hidden">
+                        <div class="grid md:grid-cols-[350px,1fr] gap-8">
+                            <!-- Left Column - Captured Image -->
+                            <div class="space-y-4">
+                                <div class="bg-white/5 rounded-xl p-4">
+                                    <div class="max-w-[250px] mx-auto"> <!-- Added max-width and center alignment -->
+                                        <div class="aspect-[3/4] rounded-lg overflow-hidden">
+                                            <img id="capturedImage" class="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <button id="reCaptureButton" class="w-full bg-white text-black font-bold text-lg rounded-full py-4 hover:bg-opacity-90 transition-all">
+                                    <i class="fa-solid fa-camera-rotate mr-2"></i> Take Another Photo
+                                </button>
+                            </div>
+                    
+                            <!-- Right Column - Results -->
+                            <div class="space-y-6">
+                                <!-- Result Preview -->
+                                <div id="captureResultPrediction" class="bg-white/5 rounded-xl p-4"></div>
+                                
+                                <!-- Tabs Container -->
+                                <div class="tab-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <button onclick="showTab(0)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
+                                        <div class="bg-green-500 p-2 rounded-full">
+                                            <i class="fa-solid fa-lightbulb text-white text-xl"></i>
+                                        </div>
+                                        <span class="text-white font-medium">Project Ideas</span>
+                                    </button>
+                                    <button onclick="showTab(1)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
+                                        <div class="bg-green-500 p-2 rounded-full">
+                                            <i class="fa-solid fa-images text-white text-xl"></i>
+                                        </div>
+                                        <span class="text-white font-medium">Image Ideas</span>
+                                    </button>
+                                    <button onclick="showTab(2)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
+                                        <div class="bg-green-500 p-2 rounded-full">
+                                            <i class="fa-solid fa-location-dot text-white text-xl"></i>
+                                        </div>
+                                        <span class="text-white font-medium">Sortation Centers</span>
+                                    </button>
+                                </div>
+                    
+                                <!-- Tab Contents -->
+                                <div class="tab-content bg-white/5 rounded-xl p-6 max-h-[500px] overflow-y-auto">
+                                    <div id="tab1" class="tab-content-item">
+                                        <div id="chat-history" class="space-y-4"></div>
+                                    </div>
+                                    <div id="tab2" class="tab-content-item hidden">
+                                        <div id="chat-images" class="space-y-4"></div>
+                                    </div>
+                                    <div id="tab3" class="tab-content-item hidden">
+                                        <div id="chat-history-sortation" class="space-y-4"></div>
+                                    </div>
+                                </div>
+                    
+                                <!-- Low Level Indicator -->
+                                <div id="low-level-indicator" class="hidden bg-yellow-500/20 text-yellow-200 p-4 rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        <p class="font-medium">Low confidence detection. Results may not be accurate.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Camera</span>
-                </a>
-                <a href="chatbot.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Chatbot</span>
-                </a>
-                <a href="index.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Logout</span>
-                </a>
+                </div>
             </div>
         </div>
+
+        <script>
+            function toggleMenu() {
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            }
+        
+            function showTab(n) {
+                const tabs = document.getElementsByClassName("tab-content-item");
+                const buttons = document.querySelectorAll('.tab-btn');
+                
+                // Hide all tabs and remove active states
+                for (let i = 0; i < tabs.length; i++) {
+                    tabs[i].classList.add('hidden');
+                    buttons[i].classList.remove('active');
+                }
+                
+                // Show selected tab and add active state
+                document.getElementById("tab" + (n + 1)).classList.remove('hidden');
+                buttons[n].classList.add('active');
+            }
+            
+            // Initialize first tab as active
+            document.addEventListener('DOMContentLoaded', () => {
+                showTab(0);
+            });
+        </script>
 
         <script type="module">
             import {
@@ -227,11 +332,14 @@ $serpapi = new GoogleSearchResults($config['api_key']);
             const captureResultPrediction = document.getElementById('captureResultPrediction');
 
             let stream;
-
-
-            // Find the captureRecognize() function and modify it:
             
             function captureRecognize(){
+                // Get the canvas image data
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                
+                // Set the captured image
+                document.getElementById('capturedImage').src = dataUrl;
+                
                 // Clear previous results first
                 captureResultPrediction.innerHTML = "";
                 historyElement.innerHTML = "";
@@ -253,7 +361,7 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                                 var nameArr = item.className.split(',');
                                 var rawProbability = parseFloat(item.probability) * 100;
                                 var itemName = nameArr[0];
-            
+                    
                                 captureResultPrediction.innerHTML += `
                                     <div class="bg-white/20 p-4 rounded-lg mb-4">
                                         <div class="flex items-center gap-3">
@@ -272,43 +380,25 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                                         </div>
                                     </div>
                                 `;
-            
+                    
                                 // Customize prompts based on item detected
-                                const projectPrompt = `As a recycling expert, provide 3 creative DIY project ideas using ${itemName}.
-                                    Format your response exactly like this without any other text:
-
-                                    Project 1: [project name]
-                                    Materials:
-                                    - [list materials]
-                                    Steps:
-                                    1. [step details]
-                                    Estimated Time: [time]
-                                    Difficulty: [easy/medium/hard]
-
-                                    Project 2: [project name]
-                                    [same format]
-
-                                    Project 3: [project name]
-                                    [same format]
-
-                                    Where to buy ${itemName}:
-                                    - [locations]
-                                    Note: Do not include any introduction of what you are like "I am a recycling expert" or "I am a bot".`;
-            
-                                const sortationPrompt = `List recycling centers in the Philippines that accept ${itemName}.
-                                    Include for each center:
-                                    - Complete address
-                                    - Contact information
-                                    - Operating hours
-                                    - Types of ${itemName} they accept
-                                    - Any special requirements for dropping off`;
-            
+                                const projectPrompt = `As a recycling expert, provide 3 creative DIY project ideas using ${itemName}. 
+                                For each project, include:
+                                🎯 Project Name
+                                📋 Materials Needed
+                                ⚡ Difficulty Level (Easy/Medium/Hard)
+                                📝 Step-by-Step Instructions (numbered)
+                                ♻️ Environmental Impact
+                                💡 Pro Tips
+                                
+                                Format the response with clear headings and spacing for better readability.`;
+                                const sortationPrompt = `List recycling centers in the Philippines that accept ${itemName}...`;
                                 const imagePrompt = `Find me DIY recycling project images using ${itemName}`;
-            
+                    
                                 startChat(projectPrompt);
                                 startChatSortation(sortationPrompt); 
                                 searchImages(imagePrompt);
-            
+                    
                                 if(rawProbability < 30){
                                     lowLevelIndicatorElement.style.display = "block";
                                 } else {
@@ -413,8 +503,11 @@ $serpapi = new GoogleSearchResults($config['api_key']);
             document.addEventListener('DOMContentLoaded', () => {
                 initCamera();
                 
+                // Existing camera button listeners
                 captureButton.addEventListener('click', () => {
                     if (stream) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         captureRecognize();
                     }
@@ -424,10 +517,31 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                     captureContainer.style.display = "block";
                     captureResultContainer.style.display = "none";
                     captureButton.innerHTML = '<i class="fa-solid fa-camera"></i>';
-                    initCamera(); // Reinitialize camera
+                    initCamera();
+                });
+            
+                // Add image upload handler
+                const imageUpload = document.getElementById('imageUpload');
+                imageUpload.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+                                ctx.drawImage(img, 0, 0);
+                                captureRecognize();
+                            }
+                            img.src = e.target.result;
+                        }
+                        
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
                 });
             });
-
+            
             showTab(0);
         </script>
     </body>

@@ -39,39 +39,94 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
-
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" 
-          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" 
-          crossorigin="anonymous" 
-          referrerpolicy="no-referrer" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 lg:max-w-[900px]">
-    <div class="flex flex-col items-center w-full">
-      <img class="w-[70%] max-w-[400px] mt-[80px] mb-5 md:w-[60%] md:mt-10" 
-           src="smart-recycling-logo.jpg"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .bg-overlay {
+            background: url('background.jpg');
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .bg-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .bg-overlay > div {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="font-[Poppins]">
+    <div class="bg-overlay">
+        <div class="min-h-screen flex items-center justify-center px-4">
+            <div class="w-full max-w-[500px]">
+                <!-- Back Button -->
+                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#22c55e] transition-all">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Back to Home
+                </a>
 
-      <form method="POST" class="w-full flex flex-col items-center mt-[50px] max-w-[600px] mx-auto">
-        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
-               name="email" 
-               type="email" 
-               placeholder="Enter Email..." />
-               
-        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
-               name="password" 
-               type="password" 
-               placeholder="Enter Password..." />
-      
-        <div class="h-[20px]"></div>
-      
-        <button type="submit" 
-                class="w-[90%] bg-white text-black font-bold text-[clamp(1.5rem,4vw,2rem)] rounded-full py-4 my-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
-          LOGIN
-        </button>
-      </form>
+                <!-- Login Container -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8">
+                    <!-- Logo Section -->
+                    <div class="text-center mb-8">
+                        <img src="smart-recycling-logo.jpg" alt="Smart Recycling Logo" class="w-[40%] max-w-[200px] mx-auto mb-4">
+                        <h1 class="text-[#22c55e] text-3xl font-bold">EcoLens</h1>
+                    </div>
+
+                    <?php if($error_msg): ?>
+                        <div class="bg-red-500/20 text-red-200 p-4 rounded-lg mb-6">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <p class="font-medium"><?php echo $error_msg; ?></p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Login Form -->
+                    <form method="POST" class="space-y-4">
+                        <div class="relative">
+                            <input type="email" name="email" placeholder="Enter Email..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   required>
+                            <i class="fa-regular fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="password" name="password" placeholder="Enter Password..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   required>
+                            <i class="fa-regular fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <button type="submit" class="w-full bg-white text-black font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all">
+                            LOGIN
+                        </button>
+                    </form>
+
+                    <!-- Sign Up Link -->
+                    <p class="text-white/80 text-center mt-6">
+                        Don't have an account? 
+                        <a href="signup.php" class="text-[#22c55e] hover:text-white transition-all">Sign Up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-  </body>
+</body>
 </html>

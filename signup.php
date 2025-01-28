@@ -1,90 +1,127 @@
 <?php
+ob_start();
 session_start();
 session_destroy();
-?>
 
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" 
-          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" 
-          crossorigin="anonymous" 
-          referrerpolicy="no-referrer" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 lg:max-w-[900px]">
-    <div class="flex flex-col items-center w-full">
-      <img class="w-[70%] max-w-[400px] mt-[80px] mb-5 md:w-[60%] md:mt-10" 
-           src="smart-recycling-logo.jpg"/>
+$error_msg = '';
+$success = false;
 
-      <form method="POST" class="w-full flex flex-col items-center mt-[50px] max-w-[600px] mx-auto">
-        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
-               name="fullname" 
-               type="text" 
-               placeholder="Enter Fullname..." />
-               
-        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
-               name="email" 
-               type="email" 
-               placeholder="Enter Email..." />
-               
-        <input class="w-[95%] px-4 py-3 my-2 text-[clamp(1rem,3vw,1.5rem)] rounded-full border-0 focus:outline-none" 
-               name="password" 
-               type="password" 
-               placeholder="Enter Password..." />
-      
-        <div class="h-[20px]"></div>
-      
-        <button type="submit" 
-                class="w-[90%] bg-white text-black font-bold text-[clamp(1.5rem,4vw,2rem)] rounded-full py-4 my-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
-          SIGN UP
-        </button>
-      </form>
-    </div>
-  </body>
-</html>
-
-<?php
-
-// Handle login form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $fullname = $_POST["fullname"]; 
-  $email = $_POST["email"];
-  $password = $_POST["password"]; 
+    $fullname = $_POST["fullname"]; 
+    $email = $_POST["email"];
+    $password = $_POST["password"]; 
 
-  // Database connection parameters
-  // $servername = "localhost";
-  // $username = "alldzqjh_smart_recycling";
-  // $pass = "RPe4fmEzfngBc@U";
-  // $dbname = "alldzqjh_smart_recycling";
+    $servername = "localhost";
+    $username = "root";
+    $pass = "";
+    $dbname = "smart_recycling";
 
-  $servername = "localhost";
-  $username = "root";
-  $pass = "";
-  $dbname = "smart_recycling";
+    $conn = new mysqli($servername, $username, $pass, $dbname);
 
-  // Create a connection
-  $conn = new mysqli($servername, $username, $pass, $dbname);
-
-  // Check connection
-  if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error); 
-  }
-
-  // Prepare and execute SQL statement to check if credentials are valid
-  $sql = "INSERT INTO tbl_user (fullname, username, password) VALUES ('$fullname', '$email', '$password')";
-  $result = $conn->query($sql);
-
-  if ($result) {
-    // Credentials are valid, log in the user    
-    header("location: login.php");
-  } else {
-    // Credentials are invalid, display an error message
-    echo "<center>Registration Failed!</center>";
-  }
-
-  // Close the connection
-  $conn->close();
+    if ($conn->connect_error) {
+        $error_msg = "Connection failed: " . $conn->connect_error;
+    } else {
+        $sql = "INSERT INTO tbl_user (fullname, username, password) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $fullname, $email, $password);
+        
+        if ($stmt->execute()) {
+            header("Location: login.php");
+            exit();
+        } else {
+            $error_msg = "Registration Failed!";
+        }
+        $stmt->close();
+        $conn->close();
+    }
 }
-
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .bg-overlay {
+            background: url('background.jpg');
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .bg-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .bg-overlay > div {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="font-[Poppins]">
+    <div class="bg-overlay">
+        <div class="min-h-screen flex items-center justify-center px-4">
+            <div class="w-full max-w-[500px]">
+                <!-- Back Button -->
+                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#22c55e] transition-all">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Back to Home
+                </a>
+
+                <!-- Signup Container -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8">
+                    <!-- Logo Section -->
+                    <div class="text-center mb-8">
+                        <img src="smart-recycling-logo.jpg" alt="Smart Recycling Logo" class="w-[40%] max-w-[200px] mx-auto mb-4">
+                        <h1 class="text-[#22c55e] text-3xl font-bold">EcoLens</h1>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <form method="POST" class="space-y-4">
+                        <div class="relative">
+                            <input type="text" name="fullname" placeholder="Enter Fullname..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   required>
+                            <i class="fa-regular fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="email" name="email" placeholder="Enter Email..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   required>
+                            <i class="fa-regular fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="password" name="password" placeholder="Enter Password..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   required>
+                            <i class="fa-regular fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <button type="submit" class="w-full bg-white text-black font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all">
+                            SIGN UP
+                        </button>
+                    </form>
+
+                    <!-- Login Link -->
+                    <p class="text-white/80 text-center mt-6">
+                        Already have an account? 
+                        <a href="login.php" class="text-[#22c55e] hover:text-white transition-all">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

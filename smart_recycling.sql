@@ -154,3 +154,7 @@ ALTER TABLE tbl_user ADD COLUMN is_admin BOOLEAN DEFAULT 0;
 
 -- Set first user as admin
 UPDATE tbl_user SET is_admin = 1 WHERE id = 1; 
+
+-- Add to tbl_remit
+ALTER TABLE tbl_remit
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;

@@ -43,7 +43,7 @@ if(isset($_POST['submit'])) {
             $stmt->bind_param("ssssis", $name, $address, $description, $materials, $rating, $link);
             
             if($stmt->execute()) {
-                echo "<script>alert('Center added successfully!'); window.location.href='home.php';</script>";
+                header("Location: home.php");
                 exit();
             } else {
                 throw new Exception("Error executing query");
@@ -55,88 +55,116 @@ if(isset($_POST['submit'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .bg-overlay {
+            background: url('background.jpg');
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .bg-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .bg-overlay > div {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
-<body class="bg-[#7ed957] max-w-[720px] mx-auto px-4 pb-24 lg:max-w-[900px]">
-    <div class="flex flex-col items-center">
-        <img class="w-[40%] max-w-[300px] mt-[clamp(40px,8vh,80px)] mb-5 md:w-[60%] md:mt-10" 
-             src="smart-recycling-logo.jpg"/>
-
-        <p class="text-[clamp(30px,5vw,50px)] font-bold text-white my-5">
-            Add Sortation Center
-        </p>
-
-        <form method="POST" class="w-full max-w-[500px] flex flex-col gap-4">
-            <input type="text" 
-                   name="name" 
-                   placeholder="Enter Center Name..."
-                   class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"/>
-            
-            <input type="text" 
-                   name="address" 
-                   placeholder="Enter Center Address..."
-                   class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"/>
-            
-            <textarea name="description" 
-                      placeholder="Enter Description..." 
-                      class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"
-                      rows="3"></textarea>
-            
-            <input type="text" 
-                   name="materials" 
-                   placeholder="Enter Materials (separated,)..."
-                   class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"/>
-            
-            <input type="text" 
-                   name="link" 
-                   placeholder="Enter Website Link..."
-                   class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"/>
-            
-            <input type="number" 
-                   name="rating" 
-                   placeholder="Enter Rating..."
-                   class="w-full px-4 py-3 text-[clamp(1rem,3vw,1.5rem)] rounded-lg border-0 focus:outline-none"/>
-
-            <button type="submit" 
-                    name="submit"
-                    class="w-full bg-white text-black font-bold text-[clamp(1.2rem,4vw,2rem)] rounded-full py-4 mt-4 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-200">
-                Add New Center
-            </button>
-        </form>
-
-        <!-- Bottom Navigation -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white py-4 shadow-md z-50 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[720px] lg:rounded-t-2xl">
-            <div class="flex justify-around max-w-[720px] mx-auto lg:px-5">
-                <a href="home.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-house"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Home</span>
+<body class="font-[Poppins]">
+    <!-- Top Navigation -->
+    <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex-shrink-0 flex items-center gap-3">
+                    <img src="smart-recycling-logo.jpg" alt="Smart Recycling Logo" class="h-10">
+                    <h1 class="text-[#22c55e] text-2xl font-bold">EcoLens</h1>
+                </div>
+                <a href="home.php" class="text-white hover:text-[#22c55e] transition-all">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Back to Home
                 </a>
-                <a href="camera.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-camera-retro"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Camera</span>
-                </a>
-                <a href="chatbot.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Chatbot</span>
-                </a>
-                <a href="index.php" class="flex flex-col items-center">
-                    <div class="text-[clamp(1.5rem,4vw,2rem)] text-[#7ed957] p-3 rounded-full hover:bg-[#7ed957] hover:text-white hover:-translate-y-1 transition-all duration-200">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </div>
-                    <span class="text-xs text-[#7ed957] mt-1">Logout</span>
-                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-overlay">
+        <div class="min-h-screen flex items-center justify-center px-4">
+            <div class="w-full max-w-[500px]">
+                <!-- Form Container -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8 mt-20">
+                    <h2 class="text-white text-2xl font-bold mb-8 text-center">Add Sortation Center</h2>
+
+                    <?php if(!empty($errors)): ?>
+                        <div class="bg-red-500/20 text-red-200 p-4 rounded-lg mb-6">
+                            <?php foreach($errors as $error): ?>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <p class="font-medium"><?php echo $error; ?></p>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" class="space-y-4">
+                        <div class="relative">
+                            <input type="text" name="name" placeholder="Enter Center Name..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
+                            <i class="fa-solid fa-building absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="address" placeholder="Enter Center Address..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
+                            <i class="fa-solid fa-location-dot absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <textarea name="description" placeholder="Enter Description..." rows="3"
+                                      class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"></textarea>
+                            <i class="fa-solid fa-align-left absolute right-4 top-6 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="materials" placeholder="Enter Materials (separated by comma)" 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
+                            <i class="fa-solid fa-recycle absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="link" placeholder="Enter Website Link..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
+                            <i class="fa-solid fa-link absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="number" name="rating" placeholder="Enter Rating (1-5)" min="1" max="5"
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
+                            <i class="fa-solid fa-star absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                        </div>
+
+                        <button type="submit" name="submit" 
+                                class="w-full bg-white text-black font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all">
+                            Add Center
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
