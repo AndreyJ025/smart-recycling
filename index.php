@@ -41,10 +41,12 @@ session_destroy();
             <div class="w-full max-w-[500px] text-center">
                 <!-- Logo Container -->
                 <div class="bg-white/5 backdrop-blur-md rounded-xl p-8 mb-8">
-                    <img src="smart-recycling-logo.jpg" 
+                    <img src="logo.png" 
                          alt="Smart Recycling Logo" 
                          class="w-[80%] max-w-[250px] mx-auto" />
-                    <h1 class="text-[#22c55e] text-3xl font-bold mt-4">EcoLens</h1>
+                        <h1 class="text-2xl font-bold">
+                            <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
+                        </h1>
                 </div>
 
                 <!-- Buttons Container -->

@@ -72,8 +72,10 @@ $result = $stmt->get_result();
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="smart-recycling-logo.jpg" alt="Smart Recycling Logo" class="h-10">
-                    <h1 class="text-[#22c55e] text-2xl font-bold">EcoLens</h1>
+                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <h1 class="text-2xl font-bold">
+                        <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
+                    </h1>
                 </div>
                 <a href="home.php" class="text-white hover:text-[#22c55e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
