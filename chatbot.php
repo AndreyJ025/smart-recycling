@@ -1,4 +1,4 @@
-<?php ob_clean(); session_start(); session_destroy(); ?>
+<?php ob_clean(); session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
