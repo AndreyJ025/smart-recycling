@@ -2,8 +2,8 @@
 session_start();
 header('Access-Control-Allow-Origin: *');
 require_once __DIR__ . '/vendor/serpapi/google-search-results-php/google-search-results.php';
-$config = require __DIR__ . '/config/serpapi-config.php';
-$serpapi = new GoogleSearchResults($config['api_key']);
+require_once  'config/serpapi-config.php';
+//$serpapi = new GoogleSearchResults($serpapi_key);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -395,11 +395,11 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                                 
                                 Format the response with clear headings and spacing for better readability.`;
                                 const sortationPrompt = `List recycling centers in the Philippines that accept ${itemName}...`;
-                                const imagePrompt = `Find me DIY recycling project images using ${itemName}`;
+                                const imagePrompt = `Find DIY recycling project images using ${itemName}`;
                     
                                 startChat(projectPrompt);
                                 startChatSortation(sortationPrompt); 
-                                searchImages(imagePrompt);
+                                search(imagePrompt);
                     
                                 if(rawProbability < 30){
                                     lowLevelIndicatorElement.style.display = "block";
@@ -415,16 +415,20 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                 });
             }
 
+            async function search(query) { // Search images function using fetch | search_images.php | search_images_v2.php | search_images_v3.php
+                try {
+                    const response = await fetch(`search_images_v3.php?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const html = await response.text();
+                    historyImagesElement.innerHTML = html;
+                } catch (error) {
+                    console.error('Error fetching images:', error);
+                    historyImagesElement.innerHTML = '<div class="text-center text-red-500 p-4">Failed to load images</div>';
+                }
+            }
 
+            // Search images function using search_images.php from server
             async function searchImages(query) {
-                // const response = await fetch(`https://alldaily.app/smart-recycling/search_images.php?q=` + query);
-
-                // // Extract image links from the API response
-                // const imageLinks = response.data;
-                // console.log(response.data)
-
-                // return imageLinks;
-
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', `https://alldaily.app/smart-recycling/search_images.php?q=` + query);
                 xhr.send();
@@ -438,39 +442,6 @@ $serpapi = new GoogleSearchResults($config['api_key']);
                     }
                 };
             }
-
-            // async function searchImages(query) {
-            //     try {
-            //         // Prepare search parameters
-            //         $params = [
-            //             "q" => $query,
-            //             "tbm" => "isch", // Image search
-            //             "num" => "8"     // Number of results
-            //         ];
-
-            //         // Execute search
-            //         $results = $serpapi->get_json($params);
-                    
-            //         // Display results
-            //         if (isset($results->images_results)) {
-            //             historyImagesElement.innerHTML = formatImageResults($results->images_results);
-            //         }
-            //     } catch(Exception $e) {
-            //         console.error('Search error:', $e->getMessage());
-            //     }
-            // }
-
-            // function formatImageResults($images) {
-            //     return `
-            //         <div class="grid grid-cols-2 gap-4">
-            //             ${images.map(img => `
-            //                 <img src="${img.thumbnail}" 
-            //                     alt="${img.title}"
-            //                     class="w-full rounded-lg shadow-lg hover:scale-105 transition-transform" />
-            //             `).join('')}
-            //         </div>
-            //     `;
-            // }
 
             async function initCamera() {
                 try {
