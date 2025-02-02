@@ -1,2 +1,2 @@
 <?php
-$serper_key = 'a71e3d60e5984284d94a9ef8fa9f05b985f102cc'; // Get from https://serper.dev/api-key
+$serper_key = '4540ca2db6a6870fde0f66d56d6b61761d764daf'; // Get from https://serper.dev/api-key
