@@ -60,13 +60,12 @@ if(isset($_POST['update_password'])) {
     exit();
 }
 
-// Fetch user data
+// Fetch user data + recent remits
 $stmt = $conn->prepare("SELECT * FROM tbl_user WHERE id = ?");
 $stmt->bind_param("i", $_SESSION["user_id"]);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
-// Fetch recent remits
 $stmt = $conn->prepare("
     SELECT r.*, s.name as center_name 
     FROM tbl_remit r
@@ -118,6 +117,33 @@ $recent_remits = $stmt->get_result();
             transform: scale(1);
             opacity: 1;
         }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-content.show {
+            transform: scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body class="font-[Poppins]">
@@ -140,138 +166,103 @@ $recent_remits = $stmt->get_result();
     </nav>
 
     <div class="bg-overlay">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="w-full max-w-4xl pt-20">
+        <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="max-w-7xl mx-auto">
                 <!-- Success/Error Messages -->
                 <?php if(isset($_SESSION['success_message'])): ?>
-                    <div class="bg-[#22c55e]/20 text-[#22c55e] p-4 rounded-xl mb-6">
-                        <?php 
-                        echo $_SESSION['success_message'];
-                        unset($_SESSION['success_message']);
-                        ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if(isset($_SESSION['error_message'])): ?>
-                    <div class="bg-red-500/20 text-red-200 p-4 rounded-xl mb-6">
-                        <?php 
-                        echo $_SESSION['error_message'];
-                        unset($_SESSION['error_message']);
-                        ?>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Profile Card -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8 mb-8">
-                    <div class="text-center mb-6">
-                        <div class="w-24 h-24 mx-auto bg-[#22c55e] rounded-full flex items-center justify-center mb-4">
-                            <i class="fa-solid fa-user text-4xl text-white"></i>
-                        </div>
-                        <h2 class="text-white text-2xl font-bold"><?php echo htmlspecialchars($user['fullname']); ?></h2>
-                        <p class="text-white/80"><?php echo htmlspecialchars($user['username']); ?></p>
-                    </div>
-
-                    <div class="text-center mb-6">
-                        <div class="bg-[#22c55e]/20 rounded-xl p-4">
-                            <h3 class="text-[#22c55e] text-xl font-bold mb-2">Total Points</h3>
-                            <p class="text-white text-3xl font-bold"><?php echo $user['total_points']; ?></p>
+                    <div class="bg-[#436d2e]/20 text-[#436d2e] p-4 rounded-xl mb-6 animate-fade-in">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <p class="font-medium"><?php echo $_SESSION['success_message']; ?></p>
                         </div>
                     </div>
+                    <?php unset($_SESSION['success_message']); ?>
+                <?php endif; ?>
 
-                    <div class="flex justify-center gap-4">
-                        <button onclick="showUsernameModal()" 
-                                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all">
-                            Change Name
-                        </button>
-                        <button onclick="showPasswordModal()" 
-                                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all">
-                            Change Password
-                        </button>
+                <!-- Profile Overview -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <!-- User Info -->
+                    <div class="md:col-span-1 bg-white/5 backdrop-blur-sm p-8 rounded-xl">
+                        <div class="text-center">
+                            <div class="w-24 h-24 mx-auto bg-[#436d2e] rounded-full flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-user text-4xl text-white"></i>
+                            </div>
+                            <h2 class="text-white text-2xl font-bold mb-1"><?php echo htmlspecialchars($user['fullname']); ?></h2>
+                            <p class="text-white/60 mb-6"><?php echo htmlspecialchars($user['username']); ?></p>
+                            
+                            <div class="flex flex-col gap-3">
+                                <button onclick="showUsernameModal()" 
+                                        class="w-full bg-white/10 hover:bg-[#436d2e] text-white px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-user-edit"></i>
+                                    Change Name
+                                </button>
+                                <button onclick="showPasswordModal()" 
+                                        class="w-full bg-white/10 hover:bg-[#436d2e] text-white px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-key"></i>
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Recent Activity -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8">
-                    <h3 class="text-white text-xl font-bold mb-6">Recent Activity</h3>
-                    <div class="space-y-4">
-                        <?php if ($recent_remits->num_rows > 0): ?>
-                            <?php while($remit = $recent_remits->fetch_assoc()): ?>
-                                <div class="bg-white/5 rounded-xl p-4">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h4 class="text-white font-medium"><?php echo htmlspecialchars($remit['item_name']); ?></h4>
-                                            <p class="text-white/80 text-sm"><?php echo htmlspecialchars($remit['center_name']); ?></p>
-                                        </div>
-                                        <?php if ($remit['points'] > 0): ?>
-                                            <div class="bg-[#22c55e] text-white px-3 py-1 rounded-xl text-sm">
-                                                +<?php echo $remit['points']; ?> points
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
+                    <!-- Stats & Activity -->
+                    <div class="md:col-span-2 space-y-6">
+                        <!-- Points Overview -->
+                        <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="text-center">
+                                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-star"></i></div>
+                                    <div class="text-2xl font-bold text-white mb-1"><?php echo $user['total_points']; ?></div>
+                                    <div class="text-white/60">Total Points</div>
                                 </div>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <p class="text-white/80 text-center">No recent activity</p>
-                        <?php endif; ?>
+                                <div class="text-center">
+                                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-recycle"></i></div>
+                                    <div class="text-2xl font-bold text-white mb-1"><?php echo $recent_remits->num_rows; ?></div>
+                                    <div class="text-white/60">Recent Activities</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl">
+                            <h3 class="text-white text-xl font-bold mb-6">Recent Activity</h3>
+                            <div class="space-y-4">
+                                <?php if ($recent_remits->num_rows > 0): ?>
+                                    <?php while($remit = $recent_remits->fetch_assoc()): ?>
+                                        <div class="group bg-white/5 hover:bg-[#436d2e]/20 rounded-xl p-6 transition-all">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="bg-[#436d2e] w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                                                        <i class="fa-solid fa-recycle text-white text-xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-white font-medium"><?php echo htmlspecialchars($remit['item_name']); ?></h4>
+                                                        <p class="text-white/60"><?php echo htmlspecialchars($remit['center_name']); ?></p>
+                                                        <p class="text-white/60 text-sm"><?php echo date('M d, Y', strtotime($remit['created_at'])); ?></p>
+                                                    </div>
+                                                </div>
+                                                <?php if ($remit['points'] > 0): ?>
+                                                    <div class="bg-[#436d2e] text-white px-4 py-2 rounded-xl flex items-center gap-2">
+                                                        <i class="fa-solid fa-star"></i>
+                                                        <?php echo $remit['points']; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <div class="text-center py-8">
+                                        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#436d2e] rounded-full mb-4">
+                                            <i class="fa-solid fa-clock text-white text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-white text-xl font-bold mb-2">No Recent Activity</h3>
+                                        <p class="text-white/60">Start your recycling journey today!</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Username Modal -->
-    <div id="usernameModal" class="modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="bg-[#1b1b1b] rounded-xl p-8 w-full max-w-md relative">
-                <button onclick="hideUsernameModal()" class="absolute top-4 right-4 text-white/50 hover:text-white">
-                    <i class="fa-solid fa-times text-xl"></i>
-                </button>
-                <h3 class="text-white text-xl font-bold mb-6">Change Name</h3>
-                <form method="POST" class="space-y-4">
-                    <div class="relative">
-                        <input type="text" 
-                            name="new_fullname" 
-                            placeholder="Enter new full name" 
-                            value="<?php echo htmlspecialchars($user['fullname']); ?>"
-                            required
-                            class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                    </div>
-                    <button type="submit" 
-                            name="update_fullname"
-                            class="w-full bg-white text-black font-bold rounded-xl py-4 hover:bg-opacity-90 transition-all">
-                        Update Name
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Password Modal -->
-    <div id="passwordModal" class="modal hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="bg-[#1b1b1b] rounded-xl p-8 w-full max-w-md relative">
-                <button onclick="hidePasswordModal()" class="absolute top-4 right-4 text-white/50 hover:text-white">
-                    <i class="fa-solid fa-times text-xl"></i>
-                </button>
-                <h3 class="text-white text-xl font-bold mb-6">Change Password</h3>
-                <form method="POST" class="space-y-4">
-                    <div class="relative">
-                        <input type="password" name="current_password" placeholder="Current password" required
-                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                    </div>
-                    <div class="relative">
-                        <input type="password" name="new_password" placeholder="New password" required
-                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                    </div>
-                    <div class="relative">
-                        <input type="password" name="confirm_password" placeholder="Confirm new password" required
-                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                    </div>
-                    <button type="submit" name="update_password"
-                            class="w-full bg-white text-black font-bold rounded-xl py-4 hover:bg-opacity-90 transition-all">
-                        Update Password
-                    </button>
-                </form>
             </div>
         </div>
     </div>
@@ -279,26 +270,38 @@ $recent_remits = $stmt->get_result();
     <script>
         function showUsernameModal() {
             const modal = document.getElementById('usernameModal');
+            const content = modal.querySelector('.modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.add('show'), 10);
+            requestAnimationFrame(() => {
+                modal.classList.add('show');
+                content.classList.add('show');
+            });
         }
 
         function hideUsernameModal() {
             const modal = document.getElementById('usernameModal');
+            const content = modal.querySelector('.modal-content');
             modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 100);
+            content.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
         function showPasswordModal() {
             const modal = document.getElementById('passwordModal');
+            const content = modal.querySelector('.modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.add('show'), 10);
+            requestAnimationFrame(() => {
+                modal.classList.add('show');
+                content.classList.add('show');
+            });
         }
 
         function hidePasswordModal() {
             const modal = document.getElementById('passwordModal');
+            const content = modal.querySelector('.modal-content');
             modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 100);
+            content.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
         // Close modals when clicking outside
@@ -314,5 +317,85 @@ $recent_remits = $stmt->get_result();
             }
         }
     </script>
+    
+    <!-- Username Change Modal -->
+    <div id="usernameModal" class="modal-backdrop hidden">
+        <div class="modal-content bg-[#1b1b1b] p-8 rounded-xl w-full max-w-md mx-4 relative">
+            <h3 class="text-white text-2xl font-bold mb-6">Change Name</h3>
+            
+            <form method="POST" class="space-y-6">
+                <div class="relative group">
+                    <input type="text" 
+                           name="new_fullname" 
+                           placeholder="Enter new name..." 
+                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                           required>
+                    <i class="fa-solid fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                </div>
+    
+                <div class="flex gap-4">
+                    <button type="button" 
+                            onclick="hideUsernameModal()" 
+                            class="flex-1 bg-white/10 text-white px-6 py-3 rounded-xl hover:bg-white/20 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            name="update_fullname" 
+                            class="flex-1 bg-[#436d2e] text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal-backdrop hidden">
+        <div class="modal-content bg-[#1b1b1b] p-8 rounded-xl w-full max-w-md mx-4 relative">
+            <h3 class="text-white text-2xl font-bold mb-6">Change Password</h3>
+            
+            <form method="POST" class="space-y-6">
+                <div class="relative group">
+                    <input type="password" 
+                           name="current_password" 
+                           placeholder="Current password..." 
+                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                           required>
+                    <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                </div>
+    
+                <div class="relative group">
+                    <input type="password" 
+                           name="new_password" 
+                           placeholder="New password..." 
+                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                           required>
+                    <i class="fa-solid fa-key absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                </div>
+    
+                <div class="relative group">
+                    <input type="password" 
+                           name="confirm_password" 
+                           placeholder="Confirm new password..." 
+                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                           required>
+                    <i class="fa-solid fa-check absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                </div>
+    
+                <div class="flex gap-4">
+                    <button type="button" 
+                            onclick="hidePasswordModal()" 
+                            class="flex-1 bg-white/10 text-white px-6 py-3 rounded-xl hover:bg-white/20 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            name="update_password" 
+                            class="flex-1 bg-[#436d2e] text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

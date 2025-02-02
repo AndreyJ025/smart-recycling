@@ -40,33 +40,33 @@ session_destroy();
         <div class="min-h-screen flex flex-col items-center justify-center px-4">
             <div class="w-full max-w-[500px] text-center">
                 <!-- Logo Container -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8 mb-8">
+                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-8 mb-12 transform hover:scale-105 transition-all">
                     <img src="logo.png" 
                          alt="Smart Recycling Logo" 
-                         class="w-[80%] max-w-[250px] mx-auto" />
-                        <h1 class="text-2xl font-bold">
-                            <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
-                        </h1>
+                         class="w-[80%] max-w-[250px] mx-auto mb-4" />
+                    <h1 class="text-3xl font-bold">
+                        <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
+                    </h1>
                 </div>
-
+    
                 <!-- Buttons Container -->
                 <div class="space-y-4">
                     <a href="signup.php" class="block">
-                        <button class="w-full bg-white text-black font-bold text-lg rounded-full py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                        <button class="w-full bg-[#436d2e] text-white font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-user-plus"></i>
-                            Sign Up
+                            Register
                         </button>
                     </a>
                     
                     <a href="login.php" class="block">
-                        <button class="w-full bg-white text-black font-bold text-lg rounded-full py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                        <button class="w-full bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-xl py-4 hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-right-to-bracket"></i>
                             Login
                         </button>
                     </a>
                     
-                    <a href="guest.php" class="block">
-                        <button class="w-full bg-white text-black font-bold text-lg rounded-full py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                    <a href="home.php" class="block">
+                        <button class="w-full bg-white/5 backdrop-blur-sm text-white font-bold text-lg rounded-xl py-4 hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-user"></i>
                             Continue as Guest
                         </button>

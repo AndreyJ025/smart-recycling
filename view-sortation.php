@@ -2,9 +2,18 @@
 session_start();
 include 'database.php';
 
+// Check if user is logged in
+if (!isset($_SESSION["user_id"])) {
+    header("Location: index.php");
+    exit();
+}
+
 // Fetch centers
 $sql = "SELECT * FROM tbl_sortation_centers";
 $result = $conn->query($sql);
+
+// Determine back button URL based on admin status
+$backUrl = isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1 ? "admin-dashboard.php" : "home.php";
 ?>
 
 <!DOCTYPE html>
@@ -50,55 +59,103 @@ $result = $conn->query($sql);
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </div>
-                <a href="home.php" class="text-white hover:text-[#22c55e] transition-all">
+                <a href="<?php echo $backUrl; ?>" class="text-white hover:text-[#22c55e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
-                    Back to Home
+                    Back
                 </a>
             </div>
         </div>
     </nav>
 
     <div class="bg-overlay">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="w-full max-w-4xl pt-20">
-                <h2 class="text-white text-3xl font-bold mb-8 text-center">Sortation Centers</h2>
-
-                <div class="space-y-4">
+        <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">Recycling Centers</h2>
+                <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Find the nearest recycling center and contribute to a sustainable future. Each center specializes in different materials.</p>
+    
+                <!-- Search Bar -->
+                <div class="max-w-xl mx-auto mb-12">
+                    <div class="relative group">
+                        <input type="text" 
+                               id="searchCenter" 
+                               placeholder="Search centers..." 
+                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all pl-12">
+                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                    </div>
+                </div>
+    
+                <!-- Centers Grid -->
+                <div class="grid md:grid-cols-2 gap-6">
                     <?php if ($result->num_rows > 0): ?>
                         <?php while($row = $result->fetch_assoc()): ?>
-                            <div class="bg-white/5 backdrop-blur-md rounded-xl p-6">
-                                <h3 class="text-white text-xl font-bold mb-2">
-                                    <?php echo htmlspecialchars($row["name"]); ?>
-                                </h3>
-                                <p class="text-white/90 mb-2">
-                                    <?php echo htmlspecialchars($row["address"]); ?>
-                                </p>
-                                <p class="text-white/80 mb-4">
+                            <div class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e]/20 transition-all">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="bg-[#436d2e] w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-recycle text-white text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-white text-xl font-bold mb-1">
+                                            <?php echo htmlspecialchars($row["name"]); ?>
+                                        </h3>
+                                        <p class="text-white/90">
+                                            <?php echo htmlspecialchars($row["address"]); ?>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-white/80 mb-4 line-clamp-2">
                                     <?php echo htmlspecialchars($row["description"]); ?>
                                 </p>
-                                <div class="text-white/80 flex items-center gap-2 mb-2">
-                                    <span class="font-bold">Materials:</span>
-                                    <?php echo htmlspecialchars($row["materials"]); ?>
+                                
+                                <div class="space-y-2 mb-6">
+                                    <div class="flex items-center gap-2 text-white/80">
+                                        <i class="fa-solid fa-boxes-stacked w-5"></i>
+                                        <span><?php echo htmlspecialchars($row["materials"]); ?></span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-white/80">
+                                        <i class="fa-solid fa-star w-5 text-[#436d2e]"></i>
+                                        <span><?php echo str_repeat('★', $row["rating"]); ?></span>
+                                    </div>
                                 </div>
-                                <div class="text-white/80 flex items-center gap-2 mb-4">
-                                    <span class="font-bold">Rating:</span>
-                                    <?php echo str_repeat('⭐', $row["rating"]); ?>
+    
+                                <div class="flex gap-4">
+                                    <a href="<?php echo htmlspecialchars($row["link"]); ?>" 
+                                       target="_blank"
+                                       class="flex-1 bg-[#436d2e] text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-90 transition-all text-center">
+                                        Visit Website
+                                    </a>
+                                    <a href="https://maps.google.com/?q=<?php echo urlencode($row["address"]); ?>" 
+                                       target="_blank"
+                                       class="flex items-center justify-center w-12 h-12 bg-white/10 rounded-xl hover:bg-[#436d2e] transition-all">
+                                        <i class="fa-solid fa-location-dot text-white"></i>
+                                    </a>
                                 </div>
-                                <a href="<?php echo htmlspecialchars($row["link"]); ?>" 
-                                   target="_blank"
-                                   class="inline-block bg-white text-black px-6 py-2 rounded-xl font-bold hover:bg-opacity-90 transition-all">
-                                    Visit Website
-                                </a>
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <div class="text-white text-center bg-white/5 backdrop-blur-md rounded-xl p-8">
-                            No centers found
+                        <div class="md:col-span-2 text-center bg-white/5 backdrop-blur-sm p-12 rounded-xl">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-[#436d2e] rounded-full mb-4">
+                                <i class="fa-solid fa-map-location-dot text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-white text-xl font-bold mb-2">No Centers Found</h3>
+                            <p class="text-white/80">Please check back later for updated listings.</p>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+    document.getElementById('searchCenter').addEventListener('input', function(e) {
+        const searchText = e.target.value.toLowerCase();
+        const centers = document.querySelectorAll('.grid > div');
+        
+        centers.forEach(center => {
+            const text = center.textContent.toLowerCase();
+            center.style.display = text.includes(searchText) ? 'block' : 'none';
+        });
+    });
+    </script>
 </body>
 </html>

@@ -98,23 +98,24 @@ if(isset($_POST['submit'])) {
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </div>
-                <a href="home.php" class="text-white hover:text-[#22c55e] transition-all">
+                <a href="admin-dashboard.php" class="text-white hover:text-[#22c55e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
-                    Back to Home
+                    Back
                 </a>
             </div>
         </div>
     </nav>
 
     <div class="bg-overlay">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="w-full max-w-[500px]">
+        <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="max-w-3xl mx-auto">
                 <!-- Form Container -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8 mt-20">
-                    <h2 class="text-white text-2xl font-bold mb-8 text-center">Add Sortation Center</h2>
-
+                <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl">
+                    <h2 class="text-3xl font-bold text-white text-center mb-4">Add Recycling Center</h2>
+                    <p class="text-white/80 text-center mb-8">Add a new recycling center to help people find places to recycle their items.</p>
+    
                     <?php if(!empty($errors)): ?>
-                        <div class="bg-red-500/20 text-red-200 p-4 rounded-lg mb-6">
+                        <div class="bg-red-500/20 text-red-200 p-4 rounded-xl mb-6">
                             <?php foreach($errors as $error): ?>
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -123,47 +124,58 @@ if(isset($_POST['submit'])) {
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
-
-                    <form method="POST" class="space-y-4">
-                        <div class="relative">
-                            <input type="text" name="name" placeholder="Enter Center Name..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                            <i class="fa-solid fa-building absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+    
+                    <form method="POST" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <label class="block text-white/80 text-sm font-medium mb-2">Center Name</label>
+                                <input type="text" name="name" placeholder="Enter center name..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                <i class="fa-solid fa-building absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+    
+                            <div class="relative group">
+                                <label class="block text-white/80 text-sm font-medium mb-2">Website</label>
+                                <input type="text" name="link" placeholder="Enter website URL..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                <i class="fa-solid fa-link absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
                         </div>
-
-                        <div class="relative">
-                            <input type="text" name="address" placeholder="Enter Center Address..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                            <i class="fa-solid fa-location-dot absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+    
+                        <div class="relative group">
+                            <label class="block text-white/80 text-sm font-medium mb-2">Address</label>
+                            <input type="text" name="address" placeholder="Enter complete address..." 
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                            <i class="fa-solid fa-location-dot absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
-
-                        <div class="relative">
-                            <textarea name="description" placeholder="Enter Description..." rows="3"
-                                      class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"></textarea>
-                            <i class="fa-solid fa-align-left absolute right-4 top-6 text-white/50"></i>
+    
+                        <div class="relative group">
+                            <label class="block text-white/80 text-sm font-medium mb-2">Description</label>
+                            <textarea name="description" placeholder="Enter center description..." rows="3"
+                                      class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"></textarea>
+                            <i class="fa-solid fa-align-left absolute right-4 top-11 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
-
-                        <div class="relative">
-                            <input type="text" name="materials" placeholder="Enter Materials (separated by comma)" 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                            <i class="fa-solid fa-recycle absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+    
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <label class="block text-white/80 text-sm font-medium mb-2">Accepted Materials</label>
+                                <input type="text" name="materials" placeholder="e.g., plastic, paper, metal..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                <i class="fa-solid fa-recycle absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+    
+                            <div class="relative group">
+                                <label class="block text-white/80 text-sm font-medium mb-2">Rating (1-5)</label>
+                                <input type="number" name="rating" placeholder="Enter rating..." min="1" max="5"
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                <i class="fa-solid fa-star absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
                         </div>
-
-                        <div class="relative">
-                            <input type="text" name="link" placeholder="Enter Website Link..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                            <i class="fa-solid fa-link absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
-                        </div>
-
-                        <div class="relative">
-                            <input type="number" name="rating" placeholder="Enter Rating (1-5)" min="1" max="5"
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors">
-                            <i class="fa-solid fa-star absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
-                        </div>
-
+    
                         <button type="submit" name="submit" 
-                                class="w-full bg-white text-black font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all">
-                            Add Center
+                                class="w-full bg-[#436d2e] text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i>
+                            Add Recycling Center
                         </button>
                     </form>
                 </div>

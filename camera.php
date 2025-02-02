@@ -25,6 +25,7 @@ require_once  'config/serpapi-config.php';
                 background-position: center;
                 background-attachment: fixed;
                 position: relative;
+                overflow: hidden;
             }
             .bg-overlay::before {
                 content: '';
@@ -38,27 +39,30 @@ require_once  'config/serpapi-config.php';
             .bg-overlay > div {
                 position: relative;
                 z-index: 1;
+                height: 100vh;
+                overflow-y: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
             }
-            .tab-btn {
-                position: relative;
-                transition: all 0.3s ease;
-            }
-            .tab-btn.active {
-                background: rgba(255, 255, 255, 0.1);
-                transform: translateY(-2px);
-            }
-            .tab-btn.active::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: #22c55e;
+            .bg-overlay > div::-webkit-scrollbar {
+                display: none;
             }
             .tab-content {
                 min-height: 300px;
                 backdrop-filter: blur(8px);
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+            }
+            .tab-content::-webkit-scrollbar {
+                width: 6px;
+            }
+            .tab-content::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .tab-content::-webkit-scrollbar-thumb {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
             }
             @media (max-width: 640px) {
                 .tab-container {
@@ -114,79 +118,88 @@ require_once  'config/serpapi-config.php';
         </nav>
     
         <div class="bg-overlay">
-            <div class="min-h-screen flex items-center justify-center px-4 pt-20">
-                <div class="w-full max-w-4xl">
-                    <!-- Replace Camera Interface section -->
-                    <div id="captureContainer" class="w-full max-w-[500px] mx-auto space-y-4">
-                        <video id="video" class="w-full h-auto rounded-2xl shadow-lg" playsinline autoplay></video>
-                        <canvas id="canvas" class="hidden"></canvas>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <button id="captureButton" class="w-full bg-white text-black font-bold rounded-full py-4 hover:bg-opacity-90 transition-all">
-                                <div class="flex flex-col items-center">
-                                    <i class="fa-solid fa-camera text-[clamp(1.2rem,4vw,2rem)]"></i>
-                                    <span class="text-sm mt-1">Capture</span>
-                                </div>
-                            </button>
+            <div class="min-h-screen pt-24 pb-12 px-4">
+                <div class="max-w-7xl mx-auto">
+                    <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">AI Image Recognition</h2>
+                    <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Take or upload a photo of your items</p>
+        
+                    <!-- Camera Interface -->
+                    <div id="captureContainer" class="w-full max-w-[500px] mx-auto">
+                        <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl mb-8">
+                            <video id="video" class="w-full h-auto rounded-xl shadow-lg mb-6" playsinline autoplay></video>
+                            <canvas id="canvas" class="hidden"></canvas>
                             
-                            <label class="w-full cursor-pointer">
-                                <input type="file" id="imageUpload" accept="image/*" class="hidden">
-                                <div class="w-full bg-white text-black font-bold rounded-full py-4 hover:bg-opacity-90 transition-all text-center">
+                            <div class="grid grid-cols-2 gap-4">
+                                <button id="captureButton" class="bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all">
                                     <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-upload text-[clamp(1.2rem,4vw,2rem)]"></i>
-                                        <span class="text-sm mt-1">Upload</span>
+                                        <i class="fa-solid fa-camera text-[clamp(1.2rem,4vw,2rem)]"></i>
+                                        <span class="text-sm mt-1">Capture</span>
                                     </div>
-                                </div>
-                            </label>
+                                </button>
+                                
+                                <label class="cursor-pointer">
+                                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                                    <div class="bg-white/10 text-white px-6 py-4 rounded-xl hover:bg-[#436d2e] transition-all text-center">
+                                        <div class="flex flex-col items-center">
+                                            <i class="fa-solid fa-upload text-[clamp(1.2rem,4vw,2rem)]"></i>
+                                            <span class="text-sm mt-1">Upload</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
-    
+        
                     <!-- Results Interface -->
                     <div id="captureResultContainer" class="w-full max-w-[1000px] mx-auto hidden">
                         <div class="grid md:grid-cols-[350px,1fr] gap-8">
                             <!-- Left Column - Captured Image -->
                             <div class="space-y-4">
-                                <div class="bg-white/5 rounded-xl p-4">
-                                    <div class="max-w-[250px] mx-auto"> <!-- Added max-width and center alignment -->
+                                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4">
+                                    <div class="max-w-[250px] mx-auto">
                                         <div class="aspect-[3/4] rounded-lg overflow-hidden">
                                             <img id="capturedImage" class="w-full h-full object-cover" />
                                         </div>
                                     </div>
                                 </div>
-                                <button id="reCaptureButton" class="w-full bg-white text-black font-bold text-lg rounded-full py-4 hover:bg-opacity-90 transition-all">
+                                <button id="reCaptureButton" 
+                                        class="w-full bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all">
                                     <i class="fa-solid fa-camera-rotate mr-2"></i> Take Another Photo
                                 </button>
                             </div>
-                    
+        
                             <!-- Right Column - Results -->
                             <div class="space-y-6">
                                 <!-- Result Preview -->
-                                <div id="captureResultPrediction" class="bg-white/5 rounded-xl p-4"></div>
+                                <div id="captureResultPrediction" class="bg-white/5 backdrop-blur-sm rounded-xl p-6"></div>
                                 
                                 <!-- Tabs Container -->
-                                <div class="tab-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <button onclick="showTab(0)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
-                                        <div class="bg-green-500 p-2 rounded-full">
+                                <div class="tab-container grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <button onclick="showTab(0)" 
+                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                        <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-lightbulb text-white text-xl"></i>
                                         </div>
                                         <span class="text-white font-medium">Project Ideas</span>
                                     </button>
-                                    <button onclick="showTab(1)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
-                                        <div class="bg-green-500 p-2 rounded-full">
+                                    <button onclick="showTab(1)" 
+                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                        <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-images text-white text-xl"></i>
                                         </div>
                                         <span class="text-white font-medium">Image Ideas</span>
                                     </button>
-                                    <button onclick="showTab(2)" class="tab-btn flex items-center justify-center space-x-3 bg-white/5 p-4 rounded-xl hover:bg-white/10 transition-all">
-                                        <div class="bg-green-500 p-2 rounded-full">
+                                    <button onclick="showTab(2)" 
+                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                        <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-location-dot text-white text-xl"></i>
                                         </div>
                                         <span class="text-white font-medium">Sortation Centers</span>
                                     </button>
                                 </div>
-                    
+        
                                 <!-- Tab Contents -->
-                                <div class="tab-content bg-white/5 rounded-xl p-6 max-h-[500px] overflow-y-auto">
+                                <div class="tab-content bg-white/5 backdrop-blur-sm rounded-xl p-6 max-h-[500px] overflow-y-auto">
                                     <div id="tab1" class="tab-content-item">
                                         <div id="chat-history" class="space-y-4"></div>
                                     </div>
@@ -197,9 +210,9 @@ require_once  'config/serpapi-config.php';
                                         <div id="chat-history-sortation" class="space-y-4"></div>
                                     </div>
                                 </div>
-                    
+        
                                 <!-- Low Level Indicator -->
-                                <div id="low-level-indicator" class="hidden bg-yellow-500/20 text-yellow-200 p-4 rounded-lg">
+                                <div id="low-level-indicator" class="hidden bg-[#436d2e]/20 text-white p-4 rounded-xl">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-triangle-exclamation"></i>
                                         <p class="font-medium">Low confidence detection. Results may not be accurate.</p>
@@ -417,7 +430,7 @@ require_once  'config/serpapi-config.php';
 
             async function search(query) { // Search images function using fetch | search_images.php | search_images_v2.php | search_images_v3.php
                 try {
-                    const response = await fetch(`search_images_v3.php?q=${encodeURIComponent(query)}`);
+                    const response = await fetch(`search_images_v2.php?q=${encodeURIComponent(query)}`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const html = await response.text();
                     historyImagesElement.innerHTML = html;

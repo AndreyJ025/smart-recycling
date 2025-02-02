@@ -11,6 +11,11 @@
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
         
         <style>
+            /* Base Layout */
+            body {
+                overflow: hidden;
+            }
+            
             .bg-overlay {
                 background: url('background.jpg');
                 min-height: 100vh;
@@ -18,7 +23,9 @@
                 background-position: center;
                 background-attachment: fixed;
                 position: relative;
+                overflow: hidden;
             }
+            
             .bg-overlay::before {
                 content: '';
                 position: absolute;
@@ -28,32 +35,73 @@
                 height: 100%;
                 background: rgba(0, 0, 0, 0.5);
             }
+            
             .bg-overlay > div {
                 position: relative;
                 z-index: 1;
+                height: 100vh;
+                overflow-y: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
             }
+            
+            .bg-overlay > div::-webkit-scrollbar {
+                display: none;
+            }
+            
+            /* Chat Content */
+            .chat-container {
+                max-height: calc(100vh - 320px);
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+            }
+            
+            .chat-container::-webkit-scrollbar {
+                width: 6px;
+            }
+            
+            .chat-container::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            
+            .chat-container::-webkit-scrollbar-thumb {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+            }
+            
+            /* Text Formatting */
             .prose blockquote {
                 white-space: pre-line;
-                line-height: 1.2;
+                line-height: 1.6;
                 padding: 1rem;
             }
+            
             .prose blockquote ul {
                 margin-left: 1.5rem;
             }
+            
             .main-point {
                 font-size: 1.5rem;
                 font-weight: 700;
                 margin-top: 0.75rem;
                 margin-bottom: 0.5rem;
             }
+            
             .sub-point {
                 font-size: 1rem;
                 margin-left: 1.5rem;
                 color: rgba(255, 255, 255, 0.8);
             }
-            .chat-container {
-                max-height: calc(100vh - 180px);
-                overflow-y: auto;
+            
+            /* Interactive Elements */
+            .faq_item {
+                transform: translateY(0);
+                transition: all 0.2s ease;
+            }
+            
+            .faq_item:hover {
+                transform: translateY(-2px);
             }
         </style>
     </head>
@@ -103,20 +151,28 @@
 
         <!-- Main Content -->
         <div class="bg-overlay">
-            <div class="min-h-screen pt-20 px-4">
+            <div class="min-h-screen pt-24 pb-12 px-4">
                 <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">AI Recycling Assistant</h2>
+                    <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Get AI guidance on recycling, upcycling, and sustainable practices. Ask any question.</p>
+
                     <!-- Chat Container -->
-                    <div class="bg-white/5 backdrop-blur-md rounded-xl p-6">
-                        <div id="chat-history" class="chat-container space-y-4 mb-6"></div>
+                    <div class="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+                        <!-- Chat History -->
+                        <div id="chat-history" class="chat-container space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-4">
+                            <!-- FAQ and messages will be populated here -->
+                        </div>
                         
                         <!-- Chat Input -->
                         <form id="form" class="relative">
                             <input id="prompt" 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-green-500 transition-colors"
-                                   placeholder="Ask me anything about recycling..."
+                                class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all pl-12"
+                                placeholder="Ask me anything about recycling..."
                             />
-                            <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-green-500 hover:text-green-400 transition-colors">
-                                <i class="fa-solid fa-paper-plane"></i>
+                            <i class="fa-solid fa-message absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                            <button type="submit" 
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#436d2e] text-white rounded-full flex items-center justify-center hover:bg-opacity-90 transition-all">
+                                <i class="fa-solid fa-paper-plane text-sm"></i>
                             </button>
                         </form>
                     </div>
@@ -148,30 +204,61 @@
 
             function sendQuestion(userMessageIndex) {
                 const answersFAQ = [
-                    `How to use Image Recognition:
-                    • Open the camera feature
-                    • Take a photo of the item using your device's camera
-                    • Wait while the app processes the image (few seconds)
-                    • Review the recognition results
-                    • Get recyclability status and recommendations
-                    • Follow the suggested disposal instructions`,
+                    `• Steps to Use
+                        - Open camera feature
+                        - Position item in frame
+                        - Tap capture button
+                        - Wait for processing
+                        - Review results
 
-                    `How Our Recognition Works:
-                    • Takes a photo of your item
-                    • Analyzes the item's features:
-                        - Shape
-                        - Color
-                    • Uses AI to identify the item
-                    • Determines if item is recyclable
-                    • Provides DIY recycling tips:
-                        - How to recycle
-                        - How to dispose
-                        - Where to recycle/dispose/donate`,
+                        • What to Expect
+                        - Item identification
+                        - Recyclability status
+                        - Disposal recommendations
+                        - DIY project ideas
 
-                    `Main App Features:
-                    • Chatbot Assistant
-                    • AI Recognition System
-                    • DIY Project Recommendations`
+                        • Pro Tips ✨
+                        - Good lighting helps
+                        - Clear background
+                        - Center the item
+                        - Hold steady
+
+                        • Environmental Impact 🌱
+                        - Reduces waste confusion
+                        - Promotes proper recycling
+                        - Supports sustainability`,
+
+                    `• How It Works
+                        - Captures image data
+                        - Analyzes visual features
+                        - Matches with database
+                        - Determines material type
+
+                        • Analysis Features
+                        - Shape recognition
+                        - Color detection
+                        - Material identification
+                        - Pattern matching
+
+                        • Capabilities ⚡
+                        - Real-time processing
+                        - Multiple materials
+                        - Accuracy indicators
+                        - Smart suggestions
+
+                        • Recommendations 💡
+                        - Recycling methods
+                        - Disposal options
+                        - Local facilities
+                        - DIY projects`,
+
+                    `• Core Features
+                        - AI Image Recognition
+                        - Smart Chatbot Assistant
+                        - DIY Project Generator
+
+                        • Other Feature 🛠
+                        - Local Recycling Centers 🏢`
                 ];
 
                 if (historyElement) {

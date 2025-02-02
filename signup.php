@@ -1,38 +1,42 @@
 <?php
-ob_start();
 session_start();
-session_destroy();
+include 'database.php';
 
 $error_msg = '';
 $success = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $fullname = $_POST["fullname"]; 
-    $email = $_POST["email"];
-    $password = $_POST["password"]; 
+    // Validate inputs
+    $fullname = trim($_POST["fullname"]);
+    $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
+    $password = $_POST["password"];
 
-    $servername = "localhost";
-    $username = "root";
-    $pass = "";
-    $dbname = "smart_recycling";
-
-    $conn = new mysqli($servername, $username, $pass, $dbname);
-
-    if ($conn->connect_error) {
-        $error_msg = "Connection failed: " . $conn->connect_error;
+    if (empty($fullname) || empty($email) || empty($password)) {
+        $error_msg = "All fields are required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_msg = "Invalid email format";
+    } elseif (strlen($password) < 5) {
+        $error_msg = "Password must be at least 5 characters";
     } else {
-        $sql = "INSERT INTO tbl_user (fullname, username, password) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss", $fullname, $email, $password);
+        // Check for duplicate email
+        $check = $conn->prepare("SELECT id FROM tbl_user WHERE username = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
         
-        if ($stmt->execute()) {
-            header("Location: login.php");
-            exit();
+        if ($check->get_result()->num_rows > 0) {
+            $error_msg = "Email already registered";
         } else {
-            $error_msg = "Registration Failed!";
+            // Insert new user
+            $stmt = $conn->prepare("INSERT INTO tbl_user (fullname, username, password, is_admin, total_points) VALUES (?, ?, ?, 0, 0)");
+            $stmt->bind_param("sss", $fullname, $email, $password);
+            
+            if ($stmt->execute()) {
+                header("Location: login.php");
+                exit();
+            } else {
+                $error_msg = "Registration failed";
+            }
         }
-        $stmt->close();
-        $conn->close();
     }
 }
 ?>
@@ -73,13 +77,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="min-h-screen flex items-center justify-center px-4">
             <div class="w-full max-w-[500px]">
                 <!-- Back Button -->
-                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#22c55e] transition-all">
+                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#436d2e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
-                    Back to Home
+                    Back
                 </a>
 
                 <!-- Signup Container -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-8">
+                <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl">
                     <!-- Logo Section -->
                     <div class="text-center mb-8">
                         <img src="logo.png" alt="Smart Recycling Logo" class="w-[40%] max-w-[200px] mx-auto mb-4">
@@ -88,38 +92,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </h1>
                     </div>
 
+                    <?php if($error_msg): ?>
+                        <div class="bg-red-500/20 text-red-200 p-4 rounded-xl mb-6">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <p class="font-medium"><?php echo $error_msg; ?></p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Signup Form -->
-                    <form method="POST" class="space-y-4">
-                        <div class="relative">
+                    <form method="POST" class="space-y-6">
+                        <div class="relative group">
                             <input type="text" name="fullname" placeholder="Enter Fullname..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
                                    required>
-                            <i class="fa-regular fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                            <i class="fa-solid fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
 
-                        <div class="relative">
+                        <div class="relative group">
                             <input type="email" name="email" placeholder="Enter Email..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
                                    required>
-                            <i class="fa-regular fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
 
-                        <div class="relative">
+                        <div class="relative group">
                             <input type="password" name="password" placeholder="Enter Password..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
                                    required>
-                            <i class="fa-regular fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                            <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
 
-                        <button type="submit" class="w-full bg-white text-black font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all">
-                            SIGN UP
+                        <button type="submit" 
+                                class="w-full bg-[#436d2e] text-white font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i>
+                            REGISTER
                         </button>
                     </form>
 
                     <!-- Login Link -->
                     <p class="text-white/80 text-center mt-6">
                         Already have an account? 
-                        <a href="login.php" class="text-[#22c55e] hover:text-white transition-all">Login</a>
+                        <a href="login.php" class="text-[#436d2e] hover:text-white transition-all">Login</a>
                     </p>
                 </div>
             </div>

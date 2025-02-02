@@ -86,49 +86,101 @@ $result = $stmt->get_result();
     </nav>
 
     <div class="bg-overlay">
-        <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="w-full max-w-4xl pt-20">
-                <h2 class="text-white text-3xl font-bold mb-8 text-center">My Remit Records</h2>
-
-                <!-- Points Display -->
-                <div class="bg-white/5 backdrop-blur-md rounded-xl p-6 mb-8">
-                    <h3 class="text-white text-2xl font-bold text-center">
-                        Total Points: <?php echo $total_points; ?>
-                    </h3>
+        <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">My Recycling Journey</h2>
+                <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Track your contributions to a sustainable future and earn rewards for your eco-friendly actions.</p>
+    
+                <!-- Stats Overview -->
+                <div class="grid md:grid-cols-2 gap-6 mb-12">
+                    <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-star"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo $total_points; ?></div>
+                        <div class="text-white/60">Total Points</div>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-recycle"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo $result->num_rows; ?></div>
+                        <div class="text-white/60">Total Records</div>
+                    </div>
                 </div>
-
-                <!-- Remit Records -->
+    
+                <!-- Search and Filter -->
+                <div class="flex gap-4 mb-8">
+                    <div class="relative group flex-1">
+                        <input type="text" 
+                               id="searchRecord" 
+                               placeholder="Search records..." 
+                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all pl-12">
+                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                    </div>
+                </div>
+    
+                <!-- Records Timeline -->
                 <div class="space-y-4">
                     <?php if ($result->num_rows > 0): ?>
                         <?php while($row = $result->fetch_assoc()): ?>
-                            <div class="bg-white/5 backdrop-blur-md rounded-xl p-6">
-                                <h3 class="text-white text-xl font-bold mb-2">
-                                    <?php echo htmlspecialchars($row["item_name"]); ?>
-                                </h3>
-                                <p class="text-white/90 mb-2">
-                                    <?php echo htmlspecialchars($row["item_quantity"]); ?> PCS.
-                                </p>
-                                <p class="text-white/80 mb-2">
-                                    <?php echo htmlspecialchars($row["center_name"]); ?>
-                                </p>
-                                <p class="text-white/80 mb-4">
-                                    <?php echo htmlspecialchars($row["center_address"]); ?>
-                                </p>
-                                <?php if ($row["points"] > 0): ?>
-                                    <div class="bg-[#22c55e] text-white px-4 py-2 rounded-xl inline-block">
-                                        Points Earned: <?php echo $row["points"]; ?>
+                            <div class="group bg-white/5 backdrop-blur-sm p-6 rounded-xl hover:bg-[#436d2e]/20 transition-all">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="bg-[#436d2e] w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                                            <i class="fa-solid fa-recycle text-white text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-white text-xl font-bold mb-1">
+                                                <?php echo htmlspecialchars($row["item_name"]); ?>
+                                                <span class="text-white/60 text-base font-normal ml-2">
+                                                    (<?php echo htmlspecialchars($row["item_quantity"]); ?> items)
+                                                </span>
+                                            </h3>
+                                            <p class="text-white/80">
+                                                <?php echo htmlspecialchars($row["center_name"]); ?> • 
+                                                <?php echo date('M d, Y', strtotime($row["created_at"])); ?>
+                                            </p>
+                                        </div>
                                     </div>
-                                <?php endif; ?>
+                                    <?php if ($row["points"] > 0): ?>
+                                        <div class="bg-[#436d2e] text-white px-4 py-2 rounded-xl flex items-center gap-2">
+                                            <i class="fa-solid fa-star"></i>
+                                            <?php echo $row["points"]; ?> Points
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="pl-16">
+                                    <p class="text-white/60">
+                                        <?php echo htmlspecialchars($row["center_address"]); ?>
+                                    </p>
+                                </div>
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <div class="text-white text-center bg-white/5 backdrop-blur-md rounded-xl p-8">
-                            No records found
+                        <div class="text-center bg-white/5 backdrop-blur-sm p-12 rounded-xl">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-[#436d2e] rounded-full mb-4">
+                                <i class="fa-solid fa-clipboard text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-white text-xl font-bold mb-2">No Records Yet</h3>
+                            <p class="text-white/80 mb-6">Start your recycling journey today!</p>
+                            <a href="add-remit.php" class="inline-flex items-center justify-center px-6 py-3 bg-[#436d2e] text-white rounded-xl hover:bg-opacity-90 transition-all">
+                                <i class="fa-solid fa-plus mr-2"></i>
+                                Add New Record
+                            </a>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+    document.getElementById('searchRecord').addEventListener('input', function(e) {
+        const searchText = e.target.value.toLowerCase();
+        const records = document.querySelectorAll('.space-y-4 > div');
+        
+        records.forEach(record => {
+            const text = record.textContent.toLowerCase();
+            record.style.display = text.includes(searchText) ? 'block' : 'none';
+        });
+    });
+    </script>
 </body>
 </html>
