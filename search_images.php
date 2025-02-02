@@ -13,7 +13,7 @@ $query = [
  "ijn" => "0",
 ];
 
-$search = new GoogleSearchResults('ae25786ca2d55c46dcd777126c354a10e311abfa435427fa2012cf582f1e4ed5');
+$search = new GoogleSearchResults('api_key_here!!!');
 $result = $search->get_json($query);
 $images_results = $result->images_results;
 
