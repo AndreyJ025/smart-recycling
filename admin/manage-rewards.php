@@ -3,11 +3,11 @@
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 
-    include 'database.php';
+    include '../database.php';
 
     // Check admin status
     if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-        header("Location: home.php");
+        header("Location: ../home.php");
         exit();
     }
 
@@ -89,7 +89,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('../assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -137,7 +137,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>

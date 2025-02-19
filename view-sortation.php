@@ -24,7 +24,7 @@ $result = $conn->query($sql);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -52,13 +52,13 @@ $result = $conn->query($sql);
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </div>
                 <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
-                    <a href="admin-dashboard.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                    <a href="admin/admin-dashboard.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                         <i class="fa-solid fa-arrow-left mr-2"></i>Back to Dashboard
                     </a>
                 <?php else: ?>
@@ -77,14 +77,28 @@ $result = $conn->query($sql);
                 <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Find the nearest recycling center and contribute to a sustainable future. Each center specializes in different materials.</p>
     
                 <!-- Search Bar -->
-                <div class="max-w-xl mx-auto mb-12">
-                    <div class="relative group">
-                        <input type="text" 
-                               id="searchCenter" 
-                               placeholder="Search centers..." 
-                               class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all pl-12">
-                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
-                    </div>
+                <div class="max-w-3xl mx-auto mb-12">
+                    <form onsubmit="filterCenters(event)">
+                        <div class="grid md:grid-cols-[1fr,auto] gap-4 items-center">
+                            <!-- Category Filter -->
+                            <select id="categoryFilter" 
+                                    class="w-full px-6 py-3.5 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all appearance-none">
+                                <option value="" class="text-gray-800">All Categories</option>
+                                <option value="plastic" class="text-gray-800">Plastic</option>
+                                <option value="paper" class="text-gray-800">Paper</option>
+                                <option value="metal" class="text-gray-800">Metal</option>
+                                <option value="glass" class="text-gray-800">Glass</option>
+                                <option value="electronics" class="text-gray-800">Electronics</option>
+                            </select>
+                
+                            <!-- Apply Filter Button -->
+                            <button type="submit" 
+                                    class="px-8 py-3.5 bg-[#436d2e] text-white rounded-xl font-semibold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-filter"></i>
+                                Filter
+                            </button>
+                        </div>
+                    </form>
                 </div>
     
                 <!-- Centers Grid -->
@@ -113,7 +127,16 @@ $result = $conn->query($sql);
                                 <div class="space-y-2 mb-6">
                                     <div class="flex items-center gap-2 text-white/80">
                                         <i class="fa-solid fa-boxes-stacked w-5"></i>
-                                        <span><?php echo htmlspecialchars($row["materials"]); ?></span>
+                                        <div class="flex flex-wrap gap-2">
+                                            <?php 
+                                            $categories = explode(',', $row["categories"]);
+                                            foreach($categories as $category): 
+                                            ?>
+                                                <span class="bg-[#436d2e]/20 text-white/90 text-sm px-3 py-1 rounded-full">
+                                                    <?php echo htmlspecialchars(trim($category)); ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
                                     <div class="flex items-center gap-2 text-white/80">
                                         <i class="fa-solid fa-star w-5 text-[#436d2e]"></i>
@@ -146,15 +169,55 @@ $result = $conn->query($sql);
     </div>
     
     <script>
-    document.getElementById('searchCenter').addEventListener('input', function(e) {
-        const searchText = e.target.value.toLowerCase();
-        const centers = document.querySelectorAll('.grid > div');
+        function filterCenters(event) {
+            if (event) event.preventDefault();
+            
+            try {
+                // Get filter values with null check
+                const categorySelect = document.getElementById('categoryFilter');
+                if (!categorySelect) return;
+    
+                const selectedCategory = categorySelect.value.toLowerCase();
+                const centers = document.querySelectorAll('.grid > .group');
+                const noResults = document.querySelector('.md\\:col-span-2');
+                let found = false;
         
-        centers.forEach(center => {
-            const text = center.textContent.toLowerCase();
-            center.style.display = text.includes(searchText) ? 'block' : 'none';
+                centers.forEach(center => {
+                    try {
+                        // Get categories
+                        const categoryTags = center.querySelectorAll('.flex-wrap span');
+                        const categories = Array.from(categoryTags).map(tag => tag.textContent.toLowerCase().trim());
+                        
+                        // Category match - only check if category is selected
+                        const matchesCategory = selectedCategory === '' || categories.includes(selectedCategory);
+                        
+                        // Show/hide based on category match
+                        center.style.display = matchesCategory ? '' : 'none';
+                        if (matchesCategory) found = true;
+                    } catch (error) {
+                        console.error('Error processing center:', error);
+                    }
+                });
+        
+                // Toggle no results message
+                if (noResults) {
+                    noResults.style.display = !found ? '' : 'none';
+                }
+            } catch (error) {
+                console.error('Error filtering centers:', error);
+            }
+        }
+    
+        // Initialize event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            const categorySelect = document.getElementById('categoryFilter');
+            
+            if (form && categorySelect) {
+                form.addEventListener('submit', filterCenters);
+                categorySelect.addEventListener('change', filterCenters);
+            }
         });
-    });
     </script>
 </body>
 </html>

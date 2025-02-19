@@ -1,8 +1,8 @@
 <?php 
 session_start();
 header('Access-Control-Allow-Origin: *');
-require_once __DIR__ . '/vendor/serpapi/google-search-results-php/google-search-results.php';
-require_once  'config/serpapi-config.php';
+require_once __DIR__ . '/../vendor/serpapi/google-search-results-php/google-search-results.php';
+require_once __DIR__ . '/../config/serpapi-config.php';
 //$serpapi = new GoogleSearchResults($serpapi_key);
 ?>
 <!DOCTYPE html>
@@ -19,7 +19,7 @@ require_once  'config/serpapi-config.php';
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
             .bg-overlay {
-                background: url('background.jpg');
+                background: url('../assets/background.jpg');
                 min-height: 100vh;
                 background-size: cover;
                 background-position: center;
@@ -80,13 +80,13 @@ require_once  'config/serpapi-config.php';
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center">
                     <div class="flex-shrink-0 flex items-center gap-3">
-                        <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                        <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                         <h1 class="text-2xl font-bold">
                             <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                         </h1>
                     </div>
                     
-                    <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                    <a href="../home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                         <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
                     </a>
                 </div>
@@ -182,8 +182,69 @@ require_once  'config/serpapi-config.php';
                                     <div id="tab2" class="tab-content-item hidden">
                                         <div id="chat-images" class="space-y-4"></div>
                                     </div>
+                                    <!-- Centers -->
                                     <div id="tab3" class="tab-content-item hidden">
-                                        <div id="chat-history-sortation" class="space-y-4"></div>
+                                        <div class="space-y-6">
+                                            <!-- Category Filter -->
+                                            <div class="flex items-center gap-4">
+                                                <select id="centerCategoryFilter" 
+                                                        class="w-full px-4 py-2 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all appearance-none">
+                                                    <option value="" class="text-gray-800">All Categories</option>
+                                                    <option value="plastic" class="text-gray-800">Plastic</option>
+                                                    <option value="paper" class="text-gray-800">Paper</option>
+                                                    <option value="metal" class="text-gray-800">Metal</option>
+                                                    <option value="glass" class="text-gray-800">Glass</option>
+                                                    <option value="electronics" class="text-gray-800">Electronics</option>
+                                                </select>
+                                            </div>
+                                    
+                                            <!-- Centers Grid -->
+                                            <div id="centersGrid" class="grid gap-4">
+                                                <?php
+                                                include '../database.php';
+                                                $sql = "SELECT * FROM tbl_sortation_centers";
+                                                $result = $conn->query($sql);
+                                    
+                                                if ($result->num_rows > 0) {
+                                                    while($row = $result->fetch_assoc()) {
+                                                        ?>
+                                                        <div class="center-card bg-white/10 p-4 rounded-xl hover:bg-[#436d2e]/20 transition-all">
+                                                            <div class="flex items-start gap-4">
+                                                                <div class="bg-[#436d2e] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                                                                    <i class="fa-solid fa-recycle text-white"></i>
+                                                                </div>
+                                                                <div class="flex-1">
+                                                                    <h3 class="text-white font-semibold"><?php echo htmlspecialchars($row["name"]); ?></h3>
+                                                                    <p class="text-white/80 text-sm"><?php echo htmlspecialchars($row["address"]); ?></p>
+                                                                    
+                                                                    <div class="flex flex-wrap gap-2 mt-2">
+                                                                        <?php 
+                                                                        $categories = explode(',', $row["categories"]);
+                                                                        foreach($categories as $category): 
+                                                                        ?>
+                                                                            <span class="bg-[#436d2e]/20 text-white/90 text-xs px-2 py-1 rounded-full">
+                                                                                <?php echo htmlspecialchars(trim($category)); ?>
+                                                                            </span>
+                                                                        <?php endforeach; ?>
+                                                                    </div>
+                                                                    
+                                                                    <a href="<?php echo htmlspecialchars($row["link"]); ?>" 
+                                                                       target="_blank"
+                                                                       class="inline-flex items-center gap-2 text-[#436d2e] hover:text-white mt-2 text-sm">
+                                                                        <i class="fa-solid fa-location-dot"></i>
+                                                                        <span>View on Maps</span>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <?php
+                                                    }
+                                                } else {
+                                                    echo '<div class="text-center text-white/80 py-8">No centers found</div>';
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
         
@@ -206,6 +267,27 @@ require_once  'config/serpapi-config.php';
                 const menu = document.getElementById('mobileMenu');
                 menu.classList.toggle('hidden');
             }
+
+            function filterCenters() {
+                const selectedCategory = document.getElementById('centerCategoryFilter').value.toLowerCase();
+                const centers = document.querySelectorAll('.center-card');
+                let found = false;
+            
+                centers.forEach(center => {
+                    const categoryTags = center.querySelectorAll('span');
+                    const categories = Array.from(categoryTags).map(tag => tag.textContent.toLowerCase().trim());
+                    
+                    const matchesCategory = !selectedCategory || categories.includes(selectedCategory);
+                    center.style.display = matchesCategory ? '' : 'none';
+                    if (matchesCategory) found = true;
+                });
+            
+                // Show/hide no results message
+                const noResults = document.querySelector('#centersGrid > .text-center');
+                if (noResults) {
+                    noResults.style.display = found ? 'none' : 'block';
+                }
+            }
         
             function showTab(n) {
                 const tabs = document.getElementsByClassName("tab-content-item");
@@ -225,6 +307,8 @@ require_once  'config/serpapi-config.php';
             // Initialize first tab as active
             document.addEventListener('DOMContentLoaded', () => {
                 showTab(0);
+
+                document.getElementById('centerCategoryFilter')?.addEventListener('change', filterCenters);
             });
         </script>
 
@@ -233,13 +317,22 @@ require_once  'config/serpapi-config.php';
                 getGenerativeModel,
                 scrollToDocumentBottom,
                 updateUI,
-            } from "./utils/shared.js";
+            } from "../utils/shared.js";
 
-            var historyElement = document.querySelector("#chat-history");
-            var historySortationElement = document.querySelector("#chat-history-sortation");
-            var historyImagesElement = document.querySelector("#chat-images");
-            var lowLevelIndicatorElement = document.querySelector("#low-level-indicator");
+            // Initialize variables at the top
+            let historyElement = document.querySelector("#chat-history");
+            let historySortationElement = document.querySelector("#chat-history-sortation");
+            let historyImagesElement = document.querySelector("#chat-images");
+            let lowLevelIndicatorElement = document.querySelector("#low-level-indicator");
             let chat;
+            
+            // Re-initialize DOM elements after document is loaded to ensure they exist
+            document.addEventListener('DOMContentLoaded', () => {
+                historyElement = document.querySelector("#chat-history");
+                historySortationElement = document.querySelector("#chat-history-sortation");
+                historyImagesElement = document.querySelector("#chat-images");
+                lowLevelIndicatorElement = document.querySelector("#low-level-indicator");
+            });
 
             async function startChat(messagetext){
                 if (!chat) {
@@ -324,30 +417,52 @@ require_once  'config/serpapi-config.php';
 
             let stream;
             
+            // Replace the existing captureRecognize function with this version:
             function captureRecognize(){
+                // Initialize elements
+                const captureResultPrediction = document.getElementById('captureResultPrediction');
+                const historyElement = document.getElementById('chat-history');
+                const historySortationElement = document.getElementById('chat-history-sortation');
+                const historyImagesElement = document.getElementById('chat-images');
+                const captureButton = document.getElementById('captureButton');
+                const lowLevelIndicatorElement = document.getElementById('low-level-indicator');
+                
+                // Verify elements exist before proceeding
+                if (!captureResultPrediction || !historyElement || !historyImagesElement) {
+                    console.error('Required elements not found');
+                    return;
+                }
+            
                 // Get the canvas image data
+                const canvas = document.getElementById('canvas');
                 const dataUrl = canvas.toDataURL('image/jpeg');
                 
                 // Set the captured image
-                document.getElementById('capturedImage').src = dataUrl;
+                const capturedImage = document.getElementById('capturedImage');
+                if (capturedImage) {
+                    capturedImage.src = dataUrl;
+                }
                 
-                // Clear previous results first
+                // Clear previous results
                 captureResultPrediction.innerHTML = "";
                 historyElement.innerHTML = "";
-                historySortationElement.innerHTML = "";
+                if (historySortationElement) {
+                    historySortationElement.innerHTML = "";
+                }
                 historyImagesElement.innerHTML = "";
-                captureButton.innerHTML = "Loading...";
+                if (captureButton) {
+                    captureButton.innerHTML = "Loading...";
+                }
                 
                 // Reset chat instance
                 chat = null;
             
-                const img = document.getElementById('canvas');
-                
+                // Process image with mobilenet
                 mobilenet.load().then(model => {
-                    model.classify(img).then(predictions => {
+                    model.classify(canvas).then(predictions => {
                         console.log('Predictions: ', predictions);
             
-                        predictions.forEach((item, index)=>{
+                        predictions.forEach((item, index) => {
                             if(index < 1) {
                                 var nameArr = item.className.split(',');
                                 var rawProbability = parseFloat(item.probability) * 100;
@@ -371,8 +486,7 @@ require_once  'config/serpapi-config.php';
                                         </div>
                                     </div>
                                 `;
-                    
-                                // Customize prompts based on item detected
+
                                 const projectPrompt = `As a recycling expert, provide 3 creative DIY project ideas using ${itemName}. 
                                 For each project, include:
                                 🎯 Project Name
@@ -387,20 +501,31 @@ require_once  'config/serpapi-config.php';
                                 const imagePrompt = `Find DIY recycling project images using ${itemName}`;
                     
                                 startChat(projectPrompt);
-                                startChatSortation(sortationPrompt); 
+                                if (historySortationElement) {
+                                    startChatSortation(sortationPrompt);
+                                }
                                 search(imagePrompt);
                     
-                                if(rawProbability < 30){
-                                    lowLevelIndicatorElement.style.display = "block";
-                                } else {
-                                    lowLevelIndicatorElement.style.display = "none";
+                                if (lowLevelIndicatorElement) {
+                                    lowLevelIndicatorElement.style.display = rawProbability < 30 ? "block" : "none";
                                 }
                             }
                         });
             
-                        captureContainer.style.display = "none";
-                        captureResultContainer.style.display = "block";
+                        // Update container visibility
+                        const captureContainer = document.getElementById('captureContainer');
+                        const captureResultContainer = document.getElementById('captureResultContainer');
+                        
+                        if (captureContainer && captureResultContainer) {
+                            captureContainer.style.display = "none";
+                            captureResultContainer.style.display = "block";
+                        }
                     });
+                }).catch(err => {
+                    console.error('Error in image processing:', err);
+                    if (captureResultPrediction) {
+                        captureResultPrediction.innerHTML = '<div class="text-red-500">Error processing image</div>';
+                    }
                 });
             }
 

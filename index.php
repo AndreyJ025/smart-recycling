@@ -13,7 +13,7 @@ session_destroy();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -41,7 +41,7 @@ session_destroy();
             <div class="w-full max-w-[500px] text-center">
                 <!-- Logo Container -->
                 <div class="bg-white/5 backdrop-blur-sm rounded-xl p-8 mb-12 transform hover:scale-105 transition-all">
-                    <img src="logo.png" 
+                    <img src="assets/logo.png" 
                          alt="Smart Recycling Logo" 
                          class="w-[80%] max-w-[250px] mx-auto mb-4" />
                     <h1 class="text-3xl font-bold">
@@ -51,14 +51,14 @@ session_destroy();
     
                 <!-- Buttons Container -->
                 <div class="space-y-4">
-                    <a href="signup.php" class="block">
+                    <a href="auth/signup.php" class="block">
                         <button class="w-full bg-[#436d2e] text-white font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-user-plus"></i>
                             Register
                         </button>
                     </a>
                     
-                    <a href="login.php" class="block">
+                    <a href="auth/login.php" class="block">
                         <button class="w-full bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-xl py-4 hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-right-to-bracket"></i>
                             Login

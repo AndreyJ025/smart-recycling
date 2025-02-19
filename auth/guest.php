@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('../assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
@@ -45,8 +45,8 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-4">
                     <a href="guest.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                    <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                    <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+                    <a href="../main-feature/camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+                    <a href="../main-feature/chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
                     <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                         <i class="fa-solid fa-right-from-bracket"></i> Logout
                     </a>
@@ -64,8 +64,8 @@
             <div id="mobileMenu" class="hidden md:hidden mt-2">
                 <div class="flex flex-col space-y-2">
                     <a href="guest.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                    <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                    <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+                    <a href="../main-feature/camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+                    <a href="../main-featur/chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
                     <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                         <i class="fa-solid fa-right-from-bracket"></i> Logout
                     </a>
@@ -84,10 +84,10 @@
                 <div>
                     <h2 class="text-3xl md:text-4xl font-semibold text-white mb-8">Quick Actions</h2>
                     <div class="flex flex-col md:flex-row justify-center gap-6">
-                        <a href="camera.php" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white bg-white text-black rounded-md hover:bg-opacity-90 transition-all text-xl font-medium">
+                        <a href="../main-feature/camera.php" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white bg-white text-black rounded-md hover:bg-opacity-90 transition-all text-xl font-medium">
                             <i class="fa-solid fa-camera-retro mr-2"></i> Camera
                         </a>
-                        <a href="chatbot.php" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-md hover:bg-white hover:text-black transition-all text-xl font-medium">
+                        <a href="../main-feature/chatbot.php" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-md hover:bg-white hover:text-black transition-all text-xl font-medium">
                             <i class="fa-solid fa-robot mr-2"></i> Chatbot
                         </a>
                     </div>

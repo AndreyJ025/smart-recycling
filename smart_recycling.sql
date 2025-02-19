@@ -64,14 +64,13 @@ INSERT INTO tbl_remit (item_name, item_points, sortation_center_id, user_id, ite
 
 --
 -- Table structure for table `tbl_sortation_centers`
---
-
 CREATE TABLE `tbl_sortation_centers` (
   `id` double NOT NULL AUTO_INCREMENT,
   `name` text DEFAULT NULL,
   `address` text DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `materials` text DEFAULT NULL,
+  `categories` varchar(255) DEFAULT NULL,
+  `contact` varchar(100) DEFAULT NULL,
   `rating` text DEFAULT NULL,
   `link` text DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -81,17 +80,17 @@ CREATE TABLE `tbl_sortation_centers` (
 -- Dumping data for table `tbl_sortation_centers`
 --
 
-INSERT INTO `tbl_sortation_centers` (`id`, `name`, `address`, `description`, `materials`, `rating`, `link`) VALUES
-(1, 'Envirocycling Fiber Inc (Sauyo)', 'B1 L12 Manchester Industrial Compound 2, Quezon City, 1116 Metro Manila, Philippines', 'Open from 7:00 AM to 6:00 PM every day.', 'plastic, paper', 5, 'https://maps.google.com/?cid=2997478909304072391'),
-(2, 'Green Haven Scrap Materials Trading', 'P2C2+FH5, Sebastian St, Valenzuela, Metro Manila, Philippines', 'Open from 8:00 AM to 4:00 PM every day except Sunday.', 'plastic, paper, metal', 5, 'https://maps.google.com/?cid=3675111170217877456'),
-(3, 'RPJ - Valenzuela', 'CNWB Compound, 20-A 1447, Marton Road, Valenzuela, Metro Manila, Philippines', 'Open from 9:00 AM to 6:00 PM every day except Sunday.', 'plastic, paper, metal', 3, 'https://maps.google.com/?cid=13959482081240542526'),
-(4, 'TPC Scrap Enterprises', 'Solar Urban Homes North, Solar Street Block 5, Lot 8, Phase 3, Caloocan, 1421 Metro Manila, Philippines', 'Open 24 hours every day except Sunday, when it is open from 10:00 AM to 5:00 PM.', 'plastic, paper, metal', 5, 'https://tpcscrapenterprises.wordpress.com/'),
-(5, 'YLJ Plastics - PET Bottle Scrap Buyer', 'PXHV+34Q, Valenzuela, Metro Manila, Philippines', 'Open from 9:00 AM to 5:00 PM every day except Saturday and Sunday.', 'plastic', 5, 'https://maps.google.com/?cid=17228057435575507911'),
-(6, 'FYM Scrap Trading', '202 Visayas Ave Extension, Novaliches, Quezon City, 1107 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal, paper, plastic', 5, 'https://maps.google.com/?cid=12345678901234567890'),
-(7, 'Jepoy Junk Shop', 'M2RP+WFG, Don Julio Gregorio, Novaliches, Quezon City, Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal, paper, plastic', 4, 'https://maps.google.com/?cid=12345678901234567891'),
-(8, 'Malate Junkshop', '9 Gregorio Araneta Ave, Sto Domingo, Quezon City, 1114 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal, paper, plastic', 4, 'https://maps.google.com/?cid=12345678901234567892'),
-(9, 'RNP Junkshop', '144 Ilocos Sur, Bago Bantay, Quezon City, 1105 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal, paper, plastic', 3, 'https://maps.google.com/?cid=12345678901234567893'),
-(10, 'Puring Junkshop', '105 Kamias Rd, Diliman, Quezon City, 1101 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal, paper, plastic', 4, 'https://maps.google.com/?cid=12345678901234567894');
+INSERT INTO `tbl_sortation_centers` (`id`, `name`, `address`, `description`, `categories`, `contact`, `rating`, `link`) VALUES
+(1, 'Envirocycling Fiber Inc (Sauyo)', 'B1 L12 Manchester Industrial Compound 2, Quezon City, 1116 Metro Manila, Philippines', 'Open from 7:00 AM to 6:00 PM every day.', 'plastic,paper', '(02) 8363-7121', '5', 'https://maps.google.com/?cid=2997478909304072391'),
+(2, 'Green Haven Scrap Materials Trading', 'P2C2+FH5, Sebastian St, Valenzuela, Metro Manila, Philippines', 'Open from 8:00 AM to 4:00 PM every day except Sunday.', 'plastic,paper,metal', '(02) 8291-5432', '5', 'https://maps.google.com/?cid=3675111170217877456'),
+(3, 'RPJ - Valenzuela', 'CNWB Compound, 20-A 1447, Marton Road, Valenzuela, Metro Manila, Philippines', 'Open from 9:00 AM to 6:00 PM every day except Sunday.', 'plastic,paper,metal', '(02) 8442-1234', '3', 'https://maps.google.com/?cid=13959482081240542526'),
+(4, 'TPC Scrap Enterprises', 'Solar Urban Homes North, Solar Street Block 5, Lot 8, Phase 3, Caloocan, 1421 Metro Manila, Philippines', 'Open 24 hours every day except Sunday, when it is open from 10:00 AM to 5:00 PM.', 'plastic,paper,metal,electronics', '(02) 8512-7890', '5', 'https://tpcscrapenterprises.wordpress.com/'),
+(5, 'YLJ Plastics - PET Bottle Scrap Buyer', 'PXHV+34Q, Valenzuela, Metro Manila, Philippines', 'Open from 9:00 AM to 5:00 PM every day except Saturday and Sunday.', 'plastic', '(02) 8665-4321', '5', 'https://maps.google.com/?cid=17228057435575507911'),
+(6, 'FYM Scrap Trading', '202 Visayas Ave Extension, Novaliches, Quezon City, 1107 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal,paper,plastic,electronics', '(02) 8123-4567', '5', 'https://maps.google.com/?cid=12345678901234567890'),
+(7, 'Jepoy Junk Shop', 'M2RP+WFG, Don Julio Gregorio, Novaliches, Quezon City, Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal,paper,plastic,glass', '(02) 8234-5678', '4', 'https://maps.google.com/?cid=12345678901234567891'),
+(8, 'Malate Junkshop', '9 Gregorio Araneta Ave, Sto Domingo, Quezon City, 1114 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal,paper,plastic,glass', '(02) 8345-6789', '4', 'https://maps.google.com/?cid=12345678901234567892'),
+(9, 'RNP Junkshop', '144 Ilocos Sur, Bago Bantay, Quezon City, 1105 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal,paper,plastic', '(02) 8456-7890', '3', 'https://maps.google.com/?cid=12345678901234567893'),
+(10, 'Puring Junkshop', '105 Kamias Rd, Diliman, Quezon City, 1101 Metro Manila, Philippines', 'Open from 8:00 AM to 5:00 PM Monday to Saturday.', 'metal,paper,plastic,electronics,glass', '(02) 8567-8901', '4', 'https://maps.google.com/?cid=12345678901234567894');
 
 
 -- --------------------------------------------------------

@@ -1,7 +1,7 @@
 <?php ob_clean(); session_start(); 
 
 
-require_once 'database.php';
+require_once '../database.php';
 
 $faqs = $conn->query("SELECT question FROM tbl_faqs WHERE is_published = 1 ORDER BY created_at DESC");
 $faqQuestions = [];
@@ -28,7 +28,7 @@ while ($row = $faqs->fetch_assoc()) {
             }
             
             .bg-overlay {
-                background: url('background.jpg');
+                background: url('../assets/background.jpg');
                 min-height: 100vh;
                 background-size: cover;
                 background-position: center;
@@ -122,13 +122,13 @@ while ($row = $faqs->fetch_assoc()) {
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center">
                     <div class="flex-shrink-0 flex items-center gap-3">
-                        <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                        <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                         <h1 class="text-2xl font-bold">
                             <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                         </h1>
                     </div>
                     
-                    <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                    <a href="../home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                         <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
                     </a>
                 </div>
@@ -230,7 +230,7 @@ while ($row = $faqs->fetch_assoc()) {
                 getGenerativeModel,
                 scrollToDocumentBottom,
                 updateUI,
-            } from "./utils/shared.js";
+            } from "../utils/shared.js";
         
             let promptInput = document.querySelector("#prompt");
             let historyElement = document.querySelector("#chat-history");

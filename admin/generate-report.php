@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'database.php';
+require_once '../database.php';
 
 // Check admin access
 if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-    header("Location: home.php");
+    header("Location: ../home.php");
     exit();
 }
 

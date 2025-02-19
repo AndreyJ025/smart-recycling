@@ -3,9 +3,9 @@
 session_start();
 header('Access-Control-Allow-Origin: *');
 
-require 'vendor/serpapi/google-search-results-php/google-search-results.php';
-require 'vendor/serpapi/google-search-results-php/restclient.php';
-require 'config/serpapi-config.php';
+require __DIR__ . '/../vendor/serpapi/google-search-results-php/google-search-results.php';
+require __DIR__ . '/../vendor/serpapi/google-search-results-php/restclient.php';
+require __DIR__ . '/../config/serpapi-config.php';
 
 $query = [
  "q" => ($_GET['q'] ?? ''),

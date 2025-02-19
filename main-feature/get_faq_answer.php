@@ -1,5 +1,5 @@
 <?php
-require_once 'database.php';
+require_once '../database.php';
 
 if (isset($_GET['question'])) {
     $stmt = $conn->prepare("SELECT answer FROM tbl_faqs WHERE question = ?");

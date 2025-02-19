@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'database.php';
+require_once '../database.php';
 
 // Check admin access
 if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-    header("Location: home.php");
+    header("Location: ../home.php");
     exit();
 }
 
@@ -55,7 +55,7 @@ $faqs = $conn->query("SELECT * FROM tbl_faqs ORDER BY created_at DESC");
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
@@ -77,20 +77,23 @@ $faqs = $conn->query("SELECT * FROM tbl_faqs ORDER BY created_at DESC");
                     <div>
                         <label class="block text-white mb-2">Question</label>
                         <input type="text" name="question" required
+                               placeholder="Enter a frequently asked question"
                                class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
                     </div>
                     <div>
                         <label class="block text-white mb-2">Answer</label>
                         <textarea name="answer" required rows="4"
+                                  placeholder="Provide a clear and helpful answer"
                                   class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]"></textarea>
                     </div>
                     <div>
                         <label class="block text-white mb-2">Category</label>
                         <input type="text" name="category" required
+                               placeholder="e.g., General, Recycling Tips, Points System"
                                class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
                     </div>
                     <button type="submit" class="bg-[#436d2e] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all">
-                        Add FAQ
+                        <i class="fa-solid fa-plus mr-2"></i>Add FAQ
                     </button>
                 </form>
             </div>

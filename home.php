@@ -15,7 +15,7 @@ session_start();
         scroll-behavior: smooth;
       }
       .bg-overlay {
-        background: url('background.jpg');
+        background: url('assets/background.jpg');
         min-height: 100vh;
         background-size: cover;
         background-position: center;
@@ -68,7 +68,7 @@ session_start();
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center">
           <div class="flex-shrink-0 flex items-center gap-3">
-              <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+              <img src="assets/logo.png" alt="Smart Recycling Logo" class="h-10">
               <h1 class="text-2xl font-bold">
                 <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
               </h1>
@@ -103,8 +103,8 @@ session_start();
                   </div>
               </div>
               
-              <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-              <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+              <a href="main-feature/camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+              <a href="main-feature/chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
             
             <!-- Profile Dropdown -->
             <div class="relative">
@@ -117,7 +117,7 @@ session_start();
               
               <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-[#1b1b1b] shadow-lg border border-white/10 dropdown-menu">
                   <div class="py-2">
-                      <a href="profile.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="user/profile.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-user-circle"></i>
@@ -126,7 +126,7 @@ session_start();
                           </div>
                       </a>
               
-                      <a href="schedule-pickup.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="user/schedule-pickup.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-truck"></i>
@@ -135,7 +135,7 @@ session_start();
                           </div>
                       </a>
               
-                      <a href="rewards.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="user/rewards.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-gift"></i>
@@ -145,7 +145,7 @@ session_start();
                       </a>
               
                       <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
-                      <a href="admin-dashboard.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="admin/admin-dashboard.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-gauge-high"></i>
@@ -202,25 +202,25 @@ session_start();
                 </a>
             </div>
               </div>
-            <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-            <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+            <a href="main-feature/camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
+            <a href="main-feature/chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
             <!-- Profile Section with submenu -->
             <div class="space-y-2">
           <div class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
               <i class="fa-solid fa-user mr-2"></i> <?php echo $_SESSION["user_fullname"] ?? "Profile" ?>
           </div>
           <div class="pl-6 space-y-2">
-              <a href="profile.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="user/profile.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-user-circle mr-2"></i> View Profile
               </a>
-              <a href="schedule-pickup.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="user/schedule-pickup.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-truck mr-2"></i> Schedule Pickup
               </a>
-              <a href="rewards.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="user/rewards.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-gift mr-2"></i> Rewards
               </a>
               <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
-              <a href="admin-dashboard.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="admin/admin-dashboard.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-gauge-high mr-2"></i> Admin Dashboard
               </a>
               <?php endif; ?>
@@ -248,7 +248,7 @@ session_start();
             <p class="text-xl text-white/80 mb-12 max-w-2xl mx-auto">
               Join us in building a sustainable future through smart recycling solutions and innovative waste management.
             </p>
-            <a href="camera.php" 
+            <a href="main-feature/camera.php" 
                 class="inline-flex items-center justify-center px-8 py-4 text-xl font-semibold text-black bg-white rounded-full hover:bg-opacity-90 transition-all">
               Start Recycling Now
               <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -279,7 +279,7 @@ session_start();
                 </div>
               </div>
               <div class="relative">
-                  <img src="about-image.jpg" alt="Recycling Process" class="rounded-xl shadow-lg">
+                  <img src="assets/about-image.jpg" alt="Recycling Process" class="rounded-xl shadow-lg">
                   <div class="absolute -bottom-6 right-8 bg-[#436d2e] p-6 rounded-xl shadow-lg">
                       <div class="text-white text-center">
                           <div class="text-4xl font-bold mb-2">1000+</div>
@@ -296,7 +296,7 @@ session_start();
             <div class="max-w-7xl mx-auto px-4">
                 <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-12">Quick Actions</h2>
                 <div class="grid md:grid-cols-3 gap-8">
-                    <a href="add-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
+                    <a href="user/add-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
                         <div class="bg-[#436d2e] group-hover:bg-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                             <i class="fa-solid fa-recycle text-white group-hover:text-[#436d2e] text-2xl"></i>
                         </div>
@@ -310,7 +310,7 @@ session_start();
                         <h3 class="text-white text-2xl font-semibold mb-2">Find Centers</h3>
                         <p class="text-white/70 group-hover:text-white/90">Locate recycling centers near you</p>
                     </a>
-                    <a href="view-user-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
+                    <a href="user/view-user-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
                         <div class="bg-[#436d2e] group-hover:bg-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                             <i class="fa-solid fa-clock-rotate-left text-white group-hover:text-[#436d2e] text-2xl"></i>
                         </div>
@@ -482,7 +482,7 @@ session_start();
             <div class="grid md:grid-cols-4 gap-8 mb-8">
               <div>
                 <div class="flex items-center gap-3 mb-6">
-                  <img src="logo.png" alt="EcoLens Logo" class="h-10">
+                  <img src="assets/logo.png" alt="EcoLens Logo" class="h-10">
                   <h3 class="text-2xl font-bold">
                     <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                   </h3>
@@ -493,8 +493,8 @@ session_start();
                 <h4 class="text-white font-semibold mb-4">Quick Links</h4>
                 <ul class="space-y-2">
                   <li><a href="home.php" class="text-white/60 hover:text-white transition-colors">Home</a></li>
-                  <li><a href="camera.php" class="text-white/60 hover:text-white transition-colors">Camera</a></li>
-                  <li><a href="chatbot.php" class="text-white/60 hover:text-white transition-colors">Chatbot</a></li>
+                  <li><a href="main-feature/camera.php" class="text-white/60 hover:text-white transition-colors">Camera</a></li>
+                  <li><a href="main-feature/chatbot.php" class="text-white/60 hover:text-white transition-colors">Chatbot</a></li>
                 </ul>
               </div>
               <div>

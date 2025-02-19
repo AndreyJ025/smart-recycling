@@ -5,11 +5,11 @@ ini_set('display_errors', 1);
 
 // Admin check
 if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-    header("Location: home.php");
+    header("Location: ../home.php");
     exit();
 }
 
-include 'database.php';
+include '../database.php';
 
 // Form processing
 if(isset($_POST['submit'])) {
@@ -19,14 +19,15 @@ if(isset($_POST['submit'])) {
     if (empty($_POST['name'])) $errors[] = "Center name is required";
     if (empty($_POST['address'])) $errors[] = "Address is required";
     if (empty($_POST['description'])) $errors[] = "Description is required";
-    if (empty($_POST['materials'])) $errors[] = "Materials are required";
+    if (empty($_POST['categories'])) $errors[] = "Categories are required";
+    if (empty($_POST['contact'])) $errors[] = "Contact number is required";
     if (!is_numeric($_POST['rating']) || $_POST['rating'] < 1 || $_POST['rating'] > 5) {
         $errors[] = "Rating must be between 1-5";
     }
     
     if(empty($errors)) {
         try {
-            $stmt = $conn->prepare("INSERT INTO tbl_sortation_centers (name, address, description, materials, rating, link) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO tbl_sortation_centers (name, address, description, categories, contact, rating, link) VALUES (?, ?, ?, ?, ?, ?, ?)");
             
             if(!$stmt) {
                 throw new Exception($conn->error);
@@ -36,14 +37,16 @@ if(isset($_POST['submit'])) {
             $name = trim(htmlspecialchars($_POST['name']));
             $address = trim(htmlspecialchars($_POST['address']));
             $description = trim(htmlspecialchars($_POST['description']));
-            $materials = trim(htmlspecialchars($_POST['materials']));
+            $categories = trim(htmlspecialchars($_POST['categories']));
+            $contact = trim(htmlspecialchars($_POST['contact']));
             $rating = (int)$_POST['rating'];
             $link = trim(htmlspecialchars($_POST['link']));
             
-            $stmt->bind_param("ssssis", $name, $address, $description, $materials, $rating, $link);
+            $stmt->bind_param("sssssss", $name, $address, $description, $categories, $contact, $rating, $link);
             
             if($stmt->execute()) {
-                header("Location: home.php");
+                $_SESSION['success'] = "Recycling center added successfully!";
+                header("Location: admin-dashboard.php");
                 exit();
             } else {
                 throw new Exception("Error executing query");
@@ -65,7 +68,7 @@ if(isset($_POST['submit'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('../assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -93,7 +96,7 @@ if(isset($_POST['submit'])) {
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
@@ -130,48 +133,62 @@ if(isset($_POST['submit'])) {
                             <div class="relative group">
                                 <label class="block text-white/80 text-sm font-medium mb-2">Center Name</label>
                                 <input type="text" name="name" placeholder="Enter center name..." 
+                                       value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>"
                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
                                 <i class="fa-solid fa-building absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                             </div>
-    
+                    
                             <div class="relative group">
-                                <label class="block text-white/80 text-sm font-medium mb-2">Website</label>
-                                <input type="text" name="link" placeholder="Enter website URL..." 
+                                <label class="block text-white/80 text-sm font-medium mb-2">Contact Number</label>
+                                <input type="text" name="contact" placeholder="e.g., (02) 8123-4567" 
+                                       value="<?php echo htmlspecialchars($_POST['contact'] ?? ''); ?>"
                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
-                                <i class="fa-solid fa-link absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                <i class="fa-solid fa-phone absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                             </div>
                         </div>
-    
+                    
                         <div class="relative group">
                             <label class="block text-white/80 text-sm font-medium mb-2">Address</label>
                             <input type="text" name="address" placeholder="Enter complete address..." 
+                                   value="<?php echo htmlspecialchars($_POST['address'] ?? ''); ?>"
                                    class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
                             <i class="fa-solid fa-location-dot absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
-    
+                    
                         <div class="relative group">
                             <label class="block text-white/80 text-sm font-medium mb-2">Description</label>
-                            <textarea name="description" placeholder="Enter center description..." rows="3"
-                                      class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"></textarea>
+                            <textarea name="description" placeholder="Enter opening hours and other important details..." rows="3"
+                                      class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
                             <i class="fa-solid fa-align-left absolute right-4 top-11 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                         </div>
-    
+                    
                         <div class="grid md:grid-cols-2 gap-6">
                             <div class="relative group">
-                                <label class="block text-white/80 text-sm font-medium mb-2">Accepted Materials</label>
-                                <input type="text" name="materials" placeholder="e.g., plastic, paper, metal..." 
+                                <label class="block text-white/80 text-sm font-medium mb-2">Categories</label>
+                                <input type="text" name="categories" placeholder="plastic,paper,metal,glass,electronics" 
+                                       value="<?php echo htmlspecialchars($_POST['categories'] ?? ''); ?>"
                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
                                 <i class="fa-solid fa-recycle absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                <small class="text-white/60 mt-1 block">Separate with commas, no spaces</small>
                             </div>
-    
+                    
                             <div class="relative group">
                                 <label class="block text-white/80 text-sm font-medium mb-2">Rating (1-5)</label>
                                 <input type="number" name="rating" placeholder="Enter rating..." min="1" max="5"
+                                       value="<?php echo htmlspecialchars($_POST['rating'] ?? ''); ?>"
                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
                                 <i class="fa-solid fa-star absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
                             </div>
                         </div>
-    
+                    
+                        <div class="relative group">
+                            <label class="block text-white/80 text-sm font-medium mb-2">Website/Map Link</label>
+                            <input type="text" name="link" placeholder="Enter website or Google Maps URL..." 
+                                   value="<?php echo htmlspecialchars($_POST['link'] ?? ''); ?>"
+                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                            <i class="fa-solid fa-link absolute right-4 top-[60%] -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                        </div>
+                    
                         <button type="submit" name="submit" 
                                 class="w-full bg-[#436d2e] text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-plus"></i>

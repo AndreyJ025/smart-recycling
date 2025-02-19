@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'database.php';
+require_once '../database.php';
 
 // Check admin access
 if (!isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] != 1) {
-    header("Location: home.php");
+    header("Location: ../home.php");
     exit();
 }
 
@@ -96,13 +96,13 @@ foreach ($weeklyActivity as $day) {
     <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
-                <a href="home.php" class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                <a href="../home.php" class="flex-shrink-0 flex items-center gap-3">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </a>
-                <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                <a href="../home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
                 </a>
             </div>
@@ -182,7 +182,7 @@ foreach ($weeklyActivity as $day) {
                         <a href="add-sortation.php" class="flex-1 bg-[#436d2e] text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all text-center">
                             <i class="fa-solid fa-plus mr-2"></i> Add New Center
                         </a>
-                        <a href="view-sortation.php" class="flex-1 border-2 border-[#436d2e] text-[#436d2e] px-6 py-3 rounded-lg font-semibold hover:bg-[#436d2e] hover:text-white transition-all text-center">
+                        <a href="../view-sortation.php" class="flex-1 border-2 border-[#436d2e] text-[#436d2e] px-6 py-3 rounded-lg font-semibold hover:bg-[#436d2e] hover:text-white transition-all text-center">
                             <i class="fa-solid fa-list mr-2"></i> View All Centers
                         </a>
                     </div>

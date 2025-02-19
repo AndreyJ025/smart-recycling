@@ -9,7 +9,7 @@ if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
     exit();
 }
 
-include 'database.php';
+include '../database.php';
 
 // Fetch centers
 $lstCenters = [];
@@ -47,7 +47,7 @@ if (isset($_POST['submit'])) {
             $stmt->bind_param("siii", $item_name, $center_id, $user_id, $quantity);
             
             if ($stmt->execute()) {
-                echo "<script>alert('Record added successfully!'); window.location.href='home.php';</script>";
+                echo "<script>alert('Record added successfully!'); window.location.href='../home.php';</script>";
                 exit();
             } else {
                 throw new Exception("Error saving record");
@@ -68,7 +68,7 @@ if (isset($_POST['submit'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .bg-overlay {
-            background: url('background.jpg');
+            background: url('../assets/background.jpg');
             min-height: 100vh;
             background-size: cover;
             background-position: center;
@@ -96,12 +96,12 @@ if (isset($_POST['submit'])) {
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <img src="logo.png" alt="Smart Recycling Logo" class="h-10">
+                    <img src="../assets/logo.png" alt="Smart Recycling Logo" class="h-10">
                     <h1 class="text-2xl font-bold">
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </div>
-                <a href="home.php" class="text-white hover:text-[#22c55e] transition-all">
+                <a href="../home.php" class="text-white hover:text-[#22c55e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
                     Back to Home
                 </a>
