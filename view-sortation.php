@@ -12,8 +12,6 @@ if (!isset($_SESSION["user_id"])) {
 $sql = "SELECT * FROM tbl_sortation_centers";
 $result = $conn->query($sql);
 
-// Determine back button URL based on admin status
-$backUrl = isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1 ? "admin-dashboard.php" : "home.php";
 ?>
 
 <!DOCTYPE html>
@@ -59,10 +57,15 @@ $backUrl = isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1 ? "admin-d
                         <span class="text-[#4e4e10]">Eco</span><span class="text-[#436d2e]">Lens</span>
                     </h1>
                 </div>
-                <a href="<?php echo $backUrl; ?>" class="text-white hover:text-[#22c55e] transition-all">
-                    <i class="fa-solid fa-arrow-left mr-2"></i>
-                    Back
-                </a>
+                <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
+                    <a href="admin-dashboard.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                <?php else: ?>
+                    <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>Back to Home
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
@@ -118,16 +121,12 @@ $backUrl = isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1 ? "admin-d
                                     </div>
                                 </div>
     
-                                <div class="flex gap-4">
+                                <div class="flex justify-end">
                                     <a href="<?php echo htmlspecialchars($row["link"]); ?>" 
                                        target="_blank"
-                                       class="flex-1 bg-[#436d2e] text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-90 transition-all text-center">
-                                        Visit Website
-                                    </a>
-                                    <a href="https://maps.google.com/?q=<?php echo urlencode($row["address"]); ?>" 
-                                       target="_blank"
-                                       class="flex items-center justify-center w-12 h-12 bg-white/10 rounded-xl hover:bg-[#436d2e] transition-all">
-                                        <i class="fa-solid fa-location-dot text-white"></i>
+                                       class="flex items-center justify-center px-6 py-3 bg-[#436d2e] rounded-xl hover:bg-opacity-90 transition-all">
+                                        <i class="fa-solid fa-location-dot text-white mr-2"></i>
+                                        <span class="text-white font-semibold">View on Maps</span>
                                     </a>
                                 </div>
                             </div>

@@ -1,4 +1,15 @@
-<?php ob_clean(); session_start(); ?>
+<?php ob_clean(); session_start(); 
+
+
+require_once 'database.php';
+
+$faqs = $conn->query("SELECT question FROM tbl_faqs WHERE is_published = 1 ORDER BY created_at DESC");
+$faqQuestions = [];
+while ($row = $faqs->fetch_assoc()) {
+    $faqQuestions[] = $row['question'];
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -117,34 +128,9 @@
                         </h1>
                     </div>
                     
-                    <!-- Desktop Menu -->
-                    <div class="hidden md:flex items-center space-x-4">
-                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
-                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
-                    </div>
-                    
-                    <!-- Mobile Menu Button -->
-                    <div class="md:hidden">
-                        <button onclick="toggleMenu()" class="text-white p-2">
-                            <i class="fa-solid fa-bars text-2xl"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Mobile Menu Panel -->
-                <div id="mobileMenu" class="hidden md:hidden mt-2">
-                    <div class="flex flex-col space-y-2">
-                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
-                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
-                    </div>
+                    <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
+                    </a>
                 </div>
             </div>
         </nav>
@@ -181,11 +167,6 @@
         </div>
 
         <script>
-            function toggleMenu() {
-                const menu = document.getElementById('mobileMenu');
-                menu.classList.toggle('hidden');
-            }
-
             function scrollToDocumentBottom() {
                 window.scrollTo({
                     top: document.documentElement.scrollHeight,
@@ -195,104 +176,51 @@
 
             // FAQ System
             let historyElement = document.querySelector("#chat-history");
-
-            const questionsFAQ = [
-                'How do I use the image recognition feature?',
-                'How does the app detect if something is recyclable?',
-                'What other features does this app offer?'
-            ];
-
-            function sendQuestion(userMessageIndex) {
-                const answersFAQ = [
-                    `• Steps to Use
-                        - Open camera feature
-                        - Position item in frame
-                        - Tap capture button
-                        - Wait for processing
-                        - Review results
-
-                        • What to Expect
-                        - Item identification
-                        - Recyclability status
-                        - Disposal recommendations
-                        - DIY project ideas
-
-                        • Pro Tips ✨
-                        - Good lighting helps
-                        - Clear background
-                        - Center the item
-                        - Hold steady
-
-                        • Environmental Impact 🌱
-                        - Reduces waste confusion
-                        - Promotes proper recycling
-                        - Supports sustainability`,
-
-                    `• How It Works
-                        - Captures image data
-                        - Analyzes visual features
-                        - Matches with database
-                        - Determines material type
-
-                        • Analysis Features
-                        - Shape recognition
-                        - Color detection
-                        - Material identification
-                        - Pattern matching
-
-                        • Capabilities ⚡
-                        - Real-time processing
-                        - Multiple materials
-                        - Accuracy indicators
-                        - Smart suggestions
-
-                        • Recommendations 💡
-                        - Recycling methods
-                        - Disposal options
-                        - Local facilities
-                        - DIY projects`,
-
-                    `• Core Features
-                        - AI Image Recognition
-                        - Smart Chatbot Assistant
-                        - DIY Project Generator
-
-                        • Other Feature 🛠
-                        - Local Recycling Centers 🏢`
-                ];
-
-                if (historyElement) {
-                    historyElement.innerHTML += `
-                        <div class="bg-white/20 rounded-lg p-4 mb-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="bg-green-500 p-2 rounded-full">
-                                    <i class="fa-solid fa-circle-user text-white"></i>
+            
+            const questionsFAQ = <?php echo json_encode($faqQuestions); ?>;
+            
+            async function sendQuestion(userMessageIndex) {
+                try {
+                    const response = await fetch('get_faq_answer.php?question=' + encodeURIComponent(questionsFAQ[userMessageIndex]));
+                    const data = await response.json();
+                    
+                    if (historyElement) {
+                        // Add user question
+                        historyElement.innerHTML += `
+                            <div class="bg-white/20 rounded-lg p-4 mb-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="bg-green-500 p-2 rounded-full">
+                                        <i class="fa-solid fa-circle-user text-white"></i>
+                                    </div>
+                                    <span class="text-white font-bold">User</span>
                                 </div>
-                                <span class="text-white font-bold">User</span>
-                            </div>
-                            <div class="prose prose-invert">
-                                <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
-                                    ${questionsFAQ[userMessageIndex]}
-                                </blockquote>
-                            </div>
-                        </div>`;
-
-                    historyElement.innerHTML += `
-                        <div class="bg-white/20 rounded-lg p-4 mb-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="bg-green-500 p-2 rounded-full">
-                                    <i class="fa-solid fa-robot text-white"></i>
+                                <div class="prose prose-invert">
+                                    <blockquote class="text-white/90 leading-relaxed">
+                                        ${questionsFAQ[userMessageIndex]}
+                                    </blockquote>
                                 </div>
-                                <span class="text-white font-bold">AI Assistant</span>
-                            </div>
-                            <div class="prose prose-invert">
-                                <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
-                                    ${answersFAQ[userMessageIndex].replace(/•/g, '\n•').replace(/-/g, '\n -')}
-                                </blockquote>
-                            </div>
-                        </div>`;
-
-                    scrollToDocumentBottom();
+                            </div>`;
+            
+                        // Add AI response
+                        historyElement.innerHTML += `
+                            <div class="bg-white/20 rounded-lg p-4 mb-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="bg-green-500 p-2 rounded-full">
+                                        <i class="fa-solid fa-robot text-white"></i>
+                                    </div>
+                                    <span class="text-white font-bold">AI Assistant</span>
+                                </div>
+                                <div class="prose prose-invert">
+                                    <blockquote class="text-white/90 leading-relaxed">
+                                        ${data.answer}
+                                    </blockquote>
+                                </div>
+                            </div>`;
+            
+                        scrollToDocumentBottom();
+                    }
+                } catch (error) {
+                    console.error("Error fetching FAQ answer:", error);
                 }
             }
         </script>

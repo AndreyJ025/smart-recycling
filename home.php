@@ -118,16 +118,52 @@ session_start();
               <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-[#1b1b1b] shadow-lg border border-white/10 dropdown-menu">
                   <div class="py-2">
                       <a href="profile.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
-                          <i class="fa-solid fa-user-circle mr-2"></i> View Profile
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-user-circle"></i>
+                              </div>
+                              <div class="flex-1">View Profile</div>
+                          </div>
                       </a>
+              
+                      <a href="schedule-pickup.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-truck"></i>
+                              </div>
+                              <div class="flex-1">Schedule Pickup</div>
+                          </div>
+                      </a>
+              
+                      <a href="rewards.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-gift"></i>
+                              </div>
+                              <div class="flex-1">Rewards</div>
+                          </div>
+                      </a>
+              
                       <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
                       <a href="admin-dashboard.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
-                          <i class="fa-solid fa-gauge-high mr-2"></i> Admin Dashboard
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-gauge-high"></i>
+                              </div>
+                              <div class="flex-1">Admin Dashboard</div>
+                          </div>
                       </a>
                       <?php endif; ?>
+              
                       <hr class="my-2 border-white/10">
+              
                       <a href="index.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
-                          <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-right-from-bracket"></i>
+                              </div>
+                              <div class="flex-1">Logout</div>
+                          </div>
                       </a>
                   </div>
               </div>
@@ -147,48 +183,54 @@ session_start();
           <div class="flex flex-col space-y-2">
               <!-- Home Section -->
               <div class="space-y-2">
-                  <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                  <div class="pl-6 space-y-2">
-                      <a href="#mission" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                          <i class="fa-solid fa-bullseye mr-2"></i> Our Mission
-                      </a>
-                      <a href="#quick-actions" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                          <i class="fa-solid fa-bolt mr-2"></i> Quick Actions
-                      </a>
-                      <a href="#testimonials" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                          <i class="fa-solid fa-quote-left mr-2"></i> Testimonials
-                      </a>
-                      <a href="#about" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                          <i class="fa-solid fa-info-circle mr-2"></i> About Us
-                      </a>
-                      <a href="#contact" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                          <i class="fa-solid fa-envelope mr-2"></i> Contact
-                      </a>
-                  </div>
+            <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
+            <div class="pl-6 space-y-2">
+                <a href="#mission" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <i class="fa-solid fa-bullseye mr-2"></i> Our Mission
+                </a>
+                <a href="#quick-actions" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <i class="fa-solid fa-bolt mr-2"></i> Quick Actions
+                </a>
+                <a href="#testimonials" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <i class="fa-solid fa-quote-left mr-2"></i> Testimonials
+                </a>
+                <a href="#about" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <i class="fa-solid fa-info-circle mr-2"></i> About Us
+                </a>
+                <a href="#contact" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <i class="fa-solid fa-envelope mr-2"></i> Contact
+                </a>
+            </div>
               </div>
             <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
             <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
             <!-- Profile Section with submenu -->
             <div class="space-y-2">
-                <div class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                    <i class="fa-solid fa-user mr-2"></i> <?php echo $_SESSION["user_fullname"] ?? "Profile" ?>
-                </div>
-                <div class="pl-6 space-y-2">
-                    <a href="profile.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                        <i class="fa-solid fa-user-circle mr-2"></i> View Profile
-                    </a>
-                    <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
-                    <a href="admin-dashboard.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
-                        <i class="fa-solid fa-gauge-high mr-2"></i> Admin Dashboard
-                    </a>
-                    <?php endif; ?>
-                </div>
+          <div class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+              <i class="fa-solid fa-user mr-2"></i> <?php echo $_SESSION["user_fullname"] ?? "Profile" ?>
+          </div>
+          <div class="pl-6 space-y-2">
+              <a href="profile.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-user-circle mr-2"></i> View Profile
+              </a>
+              <a href="schedule-pickup.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-truck mr-2"></i> Schedule Pickup
+              </a>
+              <a href="rewards.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-gift mr-2"></i> Rewards
+              </a>
+              <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
+              <a href="admin-dashboard.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-gauge-high mr-2"></i> Admin Dashboard
+              </a>
+              <?php endif; ?>
+          </div>
             </div>
             
             <hr class="border-white/10 my-2">
             
             <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+          <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
             </a>
           </div>
         </div>

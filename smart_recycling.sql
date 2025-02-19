@@ -28,31 +28,37 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `tbl_remit` (
-  `id` double NOT NULL,
+  `id` double NOT NULL AUTO_INCREMENT,
   `item_name` text NOT NULL,
   `item_points` double DEFAULT NULL,
   `sortation_center_id` double NOT NULL,
   `user_id` double NOT NULL,
   `item_quantity` int(11) NOT NULL,
   `points` int(11) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_remit`
 --
 
-INSERT INTO `tbl_remit` (`id`, `item_name`, `item_points`, `sortation_center_id`, `user_id`, `item_quantity`, `points`, `created_at`) VALUES
-(1, 'Plastic Bottles', 5, 1, 2, 10, 0, '2024-03-15 14:30:00'),
-(2, 'Cardboard Boxes', 3, 3, 4, 8, 0, '2024-03-15 15:45:00'),
-(3, 'Aluminum Cans', 4, 2, 3, 15, 0, '2024-03-14 11:20:00'),
-(4, 'Glass Bottles', 6, 5, 5, 6, 0, '2024-03-14 13:15:00'),
-(5, 'Paper Waste', 2, 4, 6, 20, 0, '2024-03-13 16:00:00'),
-(6, 'Electronic Waste', 10, 6, 2, 2, 0, '2024-03-13 09:45:00'),
-(7, 'Metal Scraps', 7, 7, 4, 5, 0, '2024-03-12 14:20:00'),
-(8, 'Plastic Containers', 4, 1, 3, 12, 0, '2024-03-12 10:30:00'),
-(9, 'Old Newspapers', 3, 3, 5, 25, 0, '2024-03-11 15:50:00'),
-(10, 'Used Batteries', 8, 6, 6, 4, 0, '2024-03-11 11:25:00');
+INSERT INTO tbl_remit (item_name, item_points, sortation_center_id, user_id, item_quantity, points, created_at) VALUES
+('Plastic Bottles', 5, 1, 2, 10, 50, '2025-02-18 14:30:00'),
+('Cardboard Boxes', 3, 3, 4, 8, 24, '2025-02-18 15:45:00'),
+('Aluminum Cans', 4, 2, 3, 15, 60, '2025-02-17 11:20:00'),
+('Glass Bottles', 6, 5, 5, 6, 36, '2025-02-17 13:15:00'),
+('Paper Waste', 2, 4, 6, 20, 40, '2025-02-16 16:00:00'),
+('Electronic Waste', 10, 6, 2, 2, 20, '2025-02-16 09:45:00'),
+('Metal Scraps', 7, 7, 4, 5, 35, '2025-02-15 14:20:00'),
+('Plastic Containers', 4, 1, 3, 12, 48, '2025-02-15 10:30:00'),
+('Old Newspapers', 3, 3, 5, 25, 75, '2025-02-14 15:50:00'),
+('Used Batteries', 8, 6, 6, 4, 32, '2025-02-14 11:25:00'),
+('Plastic Bottles', 5, 2, 2, 15, 75, '2025-02-13 13:40:00'),
+('Glass Bottles', 6, 5, 4, 8, 48, '2025-02-13 09:15:00'),
+('Aluminum Cans', 4, 2, 3, 20, 80, '2025-02-12 16:30:00'),
+('Paper Waste', 2, 4, 5, 30, 60, '2025-02-12 14:20:00'),
+('Electronic Waste', 10, 6, 6, 3, 30, '2025-02-11 10:45:00');
 
 -- --------------------------------------------------------
 
@@ -61,13 +67,14 @@ INSERT INTO `tbl_remit` (`id`, `item_name`, `item_points`, `sortation_center_id`
 --
 
 CREATE TABLE `tbl_sortation_centers` (
-  `id` double NOT NULL,
+  `id` double NOT NULL AUTO_INCREMENT,
   `name` text DEFAULT NULL,
   `address` text DEFAULT NULL,
   `description` text DEFAULT NULL,
   `materials` text DEFAULT NULL,
   `rating` text DEFAULT NULL,
-  `link` text DEFAULT NULL
+  `link` text DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -94,12 +101,13 @@ INSERT INTO `tbl_sortation_centers` (`id`, `name`, `address`, `description`, `ma
 --
 
 CREATE TABLE `tbl_user` (
-  `id` double NOT NULL,
+  `id` double NOT NULL AUTO_INCREMENT,
   `fullname` text NOT NULL,
   `username` text NOT NULL,
   `password` text NOT NULL,
   `total_points` int(11) DEFAULT 0,
-  `is_admin` tinyint(1) DEFAULT 0
+  `is_admin` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -108,57 +116,114 @@ CREATE TABLE `tbl_user` (
 
 INSERT INTO `tbl_user` (`id`, `fullname`, `username`, `password`, `total_points`, `is_admin`) VALUES
 (1, 'Alexander Morgan', 'admin@gmail.com', '12345', 0, 1),
-(2, 'Emily Rodriguez', 'user1@gmail.com', '12345', 0, 0),
-(3, 'Marcus Chen', 'user2@gmail.com', '12345', 0, 0),
-(4, 'Sofia Bennett', 'user3@gmail.com', '12345', 0, 0),
-(5, 'Nathan Walker', 'user4@gmail.com', '12345', 0, 0),
-(6, 'Isabella Thompson', 'user5@gmail.com', '12345', 0, 0);
+(2, 'Emily Rodriguez', 'user1@gmail.com', '12345', 145, 0),
+(3, 'Marcus Chen', 'user2@gmail.com', '12345', 188, 0),
+(4, 'Sofia Bennett', 'user3@gmail.com', '12345', 107, 0),
+(5, 'Nathan Walker', 'user4@gmail.com', '12345', 171, 0),
+(6, 'Isabella Thompson', 'user5@gmail.com', '12345', 102, 0);
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `tbl_remit`
---
-ALTER TABLE `tbl_remit`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `tbl_sortation_centers`
---
-ALTER TABLE `tbl_sortation_centers`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `tbl_user`
---
-ALTER TABLE `tbl_user`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `tbl_remit`
---
-ALTER TABLE `tbl_remit`
-  MODIFY `id` double NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `tbl_sortation_centers`
---
-ALTER TABLE `tbl_sortation_centers`
-  MODIFY `id` double NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `tbl_user`
---
-ALTER TABLE `tbl_user`
-  MODIFY `id` double NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- For pickups
+CREATE TABLE `tbl_pickups` (
+  `id` double NOT NULL AUTO_INCREMENT,
+  `user_id` double NOT NULL,
+  `pickup_date` DATE NOT NULL,
+  `pickup_time` varchar(20) NOT NULL,
+  `address` text NOT NULL,
+  `items` text NOT NULL,
+  `recurring` tinyint(1) DEFAULT 0,
+  `frequency` varchar(20) DEFAULT 'one-time',
+  `status` varchar(20) DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `tbl_user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Sample pickup requests
+INSERT INTO tbl_pickups (user_id, pickup_date, pickup_time, address, items, recurring, frequency, status) VALUES
+(2, '2025-02-20', 'morning', '123 Green St, Manila', 'Plastic bottles, cardboard boxes', 1, 'weekly', 'pending'),
+(3, '2025-02-21', 'afternoon', '456 Eco Ave, Quezon City', 'Electronic waste, batteries', 0, 'one-time', 'confirmed'),
+(4, '2025-02-22', 'morning', '789 Recycling Rd, Makati', 'Metal scraps, aluminum cans', 0, 'one-time', 'pending'),
+(5, '2025-02-23', 'evening', '321 Earth Blvd, Pasig', 'Glass bottles, newspapers', 1, 'monthly', 'confirmed'),
+(6, '2025-02-24', 'afternoon', '654 Nature St, Taguig', 'Paper waste, plastic containers', 0, 'one-time', 'completed'),
+(2, '2025-02-25', 'morning', '123 Green St, Manila', 'Plastic bottles', 1, 'weekly', 'pending'),
+(3, '2025-02-26', 'evening', '456 Eco Ave, Quezon City', 'Metal waste', 0, 'one-time', 'pending'),
+(4, '2025-02-27', 'afternoon', '789 Recycling Rd, Makati', 'Paper waste', 0, 'one-time', 'pending'),
+(5, '2025-02-28', 'morning', '321 Earth Blvd, Pasig', 'Glass materials', 1, 'monthly', 'pending'),
+(6, '2025-03-01', 'evening', '654 Nature St, Taguig', 'Electronic waste', 0, 'one-time', 'pending');
+
+-- For rewards
+CREATE TABLE `tbl_rewards` (
+  `id` double NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `points_required` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- Insert sample rewards
+INSERT INTO tbl_rewards (name, description, points_required) VALUES
+('Eco-Friendly Water Bottle', 'Reusable stainless steel water bottle with bamboo cap, 750ml capacity', 500),
+('Recycled Tote Bag', 'Large tote bag made from recycled materials, perfect for shopping', 300),
+('Tree Planting Certificate', 'We\'ll plant a tree in your name and send you a certificate', 1000),
+('₱100 GrabFood Voucher', 'Digital voucher for food delivery services', 800),
+('Solar Power Bank', 'Portable 10000mAh solar-powered charging bank', 1500),
+('Bamboo Utensil Set', 'Eco-friendly travel cutlery set with carrying case', 400),
+('5% Recycling Bonus', 'Get 5% extra points on your next recycling transaction', 600),
+('Metal Straw Set', 'Set of 4 stainless steel straws with cleaning brush', 200),
+('Composting Starter Kit', 'Basic home composting kit with guide book', 1200),
+('EcoLens Premium Status', 'Special badge and 2x points for 1 month', 2000),
+('₱200 Mercury Drug Gift Card', 'Gift card for pharmacy purchases', 1600),
+('Eco-Friendly Phone Case', 'Biodegradable phone case made from plant materials', 700),
+('Local Farm Produce Box', 'Fresh vegetables from local sustainable farms', 900),
+('Public Transport Card ₱150', 'Preloaded card for public transportation', 1000),
+('Zero-Waste Starter Kit', 'Collection of basic zero-waste lifestyle products', 1800);
+
+-- For redemptions
+CREATE TABLE `tbl_redemptions` (
+  `id` double NOT NULL AUTO_INCREMENT,
+  `user_id` double NOT NULL,
+  `reward_id` double NOT NULL,
+  `points_used` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `tbl_user`(`id`),
+  FOREIGN KEY (`reward_id`) REFERENCES `tbl_rewards`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Sample redemptions
+INSERT INTO tbl_redemptions (user_id, reward_id, points_used, created_at) VALUES
+(2, 1, 500, '2025-02-17 10:30:00'), -- Water Bottle
+(3, 2, 300, '2025-02-17 11:45:00'), -- Tote Bag
+(4, 6, 400, '2025-02-16 14:20:00'), -- Utensil Set
+(5, 8, 200, '2025-02-16 15:30:00'), -- Straw Set
+(2, 4, 800, '2025-02-15 09:15:00'), -- GrabFood Voucher
+(6, 2, 300, '2025-02-15 10:45:00'), -- Tote Bag
+(3, 7, 600, '2025-02-14 13:20:00'), -- Recycling Bonus
+(4, 8, 200, '2025-02-14 14:30:00'), -- Straw Set
+(5, 3, 1000, '2025-02-13 16:45:00'), -- Tree Planting
+(6, 6, 400, '2025-02-13 11:30:00'); -- Utensil Set
+
+-- Create FAQ table
+CREATE TABLE `tbl_faqs` (
+  `id` double NOT NULL AUTO_INCREMENT,
+  `question` text NOT NULL,
+  `answer` text NOT NULL,
+  `category` varchar(50) DEFAULT 'General',
+  `is_published` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Sample FAQs
+INSERT INTO `tbl_faqs` (`question`, `answer`, `category`) VALUES
+('What items can I recycle?', 'We accept plastic bottles, paper, cardboard, glass, and metal containers. All items should be clean and dry.', 'Recycling'),
+('How do I earn points?', 'You earn points by recycling items at our partner centers. Different items have different point values.', 'Points'),
+('Where are the recycling centers located?', 'We have partner centers across Metro Manila. Check our locations page for the nearest center.', 'Centers');

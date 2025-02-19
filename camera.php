@@ -75,6 +75,7 @@ require_once  'config/serpapi-config.php';
         </style>
     </head>
     <body class="font-[Poppins]">
+        <!-- Navigation Bar -->
         <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center">
@@ -85,34 +86,9 @@ require_once  'config/serpapi-config.php';
                         </h1>
                     </div>
                     
-                    <!-- Desktop Menu -->
-                    <div class="hidden md:flex items-center space-x-4">
-                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
-                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
-                    </div>
-    
-                    <!-- Mobile Menu Button -->
-                    <div class="md:hidden">
-                        <button onclick="toggleMenu()" class="text-white p-2">
-                            <i class="fa-solid fa-bars text-2xl"></i>
-                        </button>
-                    </div>
-                </div>
-    
-                <!-- Mobile Menu Panel -->
-                <div id="mobileMenu" class="hidden md:hidden mt-2">
-                    <div class="flex flex-col space-y-2">
-                        <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Home</a>
-                        <a href="camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
-                        <a href="chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
-                        <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </a>
-                    </div>
+                    <a href="home.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
+                    </a>
                 </div>
             </div>
         </nav>
