@@ -12,8 +12,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = mysqli_real_escape_string($conn, $_POST["email"]);
     $password = mysqli_real_escape_string($conn, $_POST["password"]);
     
-    // Modified query to include is_admin
-    $stmt = $conn->prepare("SELECT id, fullname, is_admin FROM tbl_user WHERE username = ? AND password = ? LIMIT 1");
+    // Modified query to include is_admin and user_type
+    $stmt = $conn->prepare("SELECT id, fullname, is_admin, user_type FROM tbl_user WHERE username = ? AND password = ? LIMIT 1");
     $stmt->bind_param("ss", $email, $password);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -21,15 +21,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
         
-        // Set session variables including admin status
+        // Set session variables including admin status and user type
         $_SESSION["logged_in"] = true;
         $_SESSION["user_id"] = $user['id'];
         $_SESSION["user_fullname"] = $user['fullname'];
         $_SESSION["is_admin"] = $user['is_admin'];
+        $_SESSION["user_type"] = $user['user_type'];
         
-        error_log("Login successful - User ID: " . $_SESSION["user_id"] . " Admin: " . $_SESSION["is_admin"]);
+        error_log("Login successful - User ID: " . $_SESSION["user_id"] . " Admin: " . $_SESSION["is_admin"] . " Type: " . $_SESSION["user_type"]);
         
-        header("Location: ../home.php");
+        // Redirect based on user type
+        if ($user['is_admin']) {
+            header("Location: ../home.php");
+        } elseif ($user['user_type'] === 'business') {
+            header("Location: ../business/dashboard.php");
+        } elseif ($user['user_type'] === 'center') {
+            header("Location: ../centers/dashboard.php");
+        } else {
+            header("Location: ../home.php");
+        }
         exit();
     } else {
         $error_msg = "Invalid email or password.";
@@ -39,6 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="min-h-screen flex items-center justify-center px-4">
             <div class="w-full max-w-[500px]">
                 <!-- Back Button -->
-                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#436d2e] transition-all">
+                <a href="../index.php" class="inline-flex items-center text-white mb-8 hover:text-[#436d2e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
                     Back
                 </a>
