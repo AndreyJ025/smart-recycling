@@ -1,0 +1,3 @@
+//Rename this file to serpapi-config.php
+<?php
+$serpapi_key = 'your api key here'; // Get from serpapi.com dashboard
