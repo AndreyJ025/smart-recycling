@@ -10,36 +10,110 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullname = trim($_POST["fullname"]);
     $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
     $password = $_POST["password"];
+    $user_type = $_POST["user_type"];
+    
+    // Business/Center fields
+    $business_name = in_array($user_type, ['business', 'center']) ? trim($_POST["business_name"]) : null;
+    $address = in_array($user_type, ['business', 'center']) ? trim($_POST["address"]) : null;
+    $contact_number = in_array($user_type, ['business', 'center']) ? trim($_POST["contact_number"]) : null;
+    
+    // Center-specific fields
+    $description = $user_type === 'center' ? trim($_POST["description"]) : null;
+    $categories = $user_type === 'center' ? trim($_POST["categories"]) : null;
+    $link = $user_type === 'center' ? trim($_POST["link"]) : null;
 
+    // Validation
     if (empty($fullname) || empty($email) || empty($password)) {
         $error_msg = "All fields are required";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_msg = "Invalid email format";
     } elseif (strlen($password) < 5) {
         $error_msg = "Password must be at least 5 characters";
+    } elseif (in_array($user_type, ['business', 'center']) && (empty($business_name) || empty($address) || empty($contact_number))) {
+        $error_msg = "All organization fields are required";
+    } elseif ($user_type === 'center' && (empty($description) || empty($categories))) {
+        $error_msg = "All center fields are required";
     } else {
-        // Check for duplicate email
-        $check = $conn->prepare("SELECT id FROM tbl_user WHERE username = ?");
-        $check->bind_param("s", $email);
-        $check->execute();
+        // Start transaction
+        $conn->begin_transaction();
         
-        if ($check->get_result()->num_rows > 0) {
-            $error_msg = "Email already registered";
-        } else {
-            // Insert new user
-            $stmt = $conn->prepare("INSERT INTO tbl_user (fullname, username, password, is_admin, total_points) VALUES (?, ?, ?, 0, 0)");
-            $stmt->bind_param("sss", $fullname, $email, $password);
+        try {
+            // Check for duplicate email
+            $check = $conn->prepare("SELECT id FROM tbl_user WHERE username = ?");
+            $check->bind_param("s", $email);
+            $check->execute();
             
-            if ($stmt->execute()) {
-                header("Location: login.php");
-                exit();
+            if ($check->get_result()->num_rows > 0) {
+                $error_msg = "Email already registered";
+                $conn->rollback();
             } else {
-                $error_msg = "Registration failed";
+                $center_id = null;
+                                
+                // If registering as a center, create sortation center entry first
+                if ($user_type === 'center') {
+                    $stmt = $conn->prepare("INSERT INTO tbl_sortation_centers (
+                        name, 
+                        address, 
+                        contact,
+                        description,
+                        categories,
+                        rating,
+                        link
+                    ) VALUES (?, ?, ?, ?, ?, 3, ?)");
+                    
+                    $stmt->bind_param("ssssss", 
+                        $business_name, 
+                        $address, 
+                        $contact_number,
+                        $description,
+                        $categories,
+                        $link
+                    );
+                    $stmt->execute();
+                    $center_id = $conn->insert_id;
+                }
+                
+                // Insert new user
+                $stmt = $conn->prepare("INSERT INTO tbl_user (
+                    fullname, 
+                    username, 
+                    password, 
+                    is_admin, 
+                    total_points, 
+                    user_type, 
+                    business_name, 
+                    address, 
+                    contact_number, 
+                    center_id
+                ) VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?, ?)");
+                
+                $stmt->bind_param("sssssssi", 
+                    $fullname, 
+                    $email, 
+                    $password, 
+                    $user_type, 
+                    $business_name, 
+                    $address, 
+                    $contact_number, 
+                    $center_id
+                );
+                
+                if ($stmt->execute()) {
+                    $conn->commit();
+                    header("Location: login.php?registration=success");
+                    exit();
+                } else {
+                    throw new Exception("Registration failed");
+                }
             }
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error_msg = $e->getMessage();
         }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,9 +149,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="font-[Poppins]">
     <div class="bg-overlay">
         <div class="min-h-screen flex items-center justify-center px-4">
-            <div class="w-full max-w-[500px]">
+            <div class="w-full max-w-[800px]">
                 <!-- Back Button -->
-                <a href="index.php" class="inline-flex items-center text-white mb-8 hover:text-[#436d2e] transition-all">
+                <a href="../index.php" class="inline-flex items-center text-white mb-8 hover:text-[#436d2e] transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
                     Back
                 </a>
@@ -103,25 +177,88 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <!-- Signup Form -->
                     <form method="POST" class="space-y-6">
-                        <div class="relative group">
-                            <input type="text" name="fullname" placeholder="Enter Fullname..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
-                                   required>
-                            <i class="fa-solid fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                        <!-- Basic Information - Two Column Layout -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <input type="text" name="fullname" placeholder="Enter Fullname..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                                       required>
+                                <i class="fa-solid fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+
+                            <div class="relative group">
+                                <input type="email" name="email" placeholder="Enter Email..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                                       required>
+                                <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+
+                            <div class="relative group">
+                                <input type="password" name="password" placeholder="Enter Password..." 
+                                       class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
+                                       required>
+                                <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+
+                            <div class="relative group">
+                                <select name="user_type" 
+                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all appearance-none pr-16"
+                                        onchange="toggleBusinessFields(this.value)"
+                                        required>
+                                    <option value="individual" class="text-black">Individual Account</option>
+                                    <option value="business" class="text-black">Business Account</option>
+                                    <option value="center" class="text-black">Recycling Center Account</option>
+                                </select>
+                                <i class="fa-solid fa-users absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                <i class="fa-solid fa-chevron-down absolute right-10 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
                         </div>
 
-                        <div class="relative group">
-                            <input type="email" name="email" placeholder="Enter Email..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
-                                   required>
-                            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                        <!-- Business Fields (Hidden by default) -->
+                        <div id="businessFields" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="relative group">
+                                    <input type="text" name="business_name" placeholder="Enter Business Name..." 
+                                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                    <i class="fa-solid fa-building absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                </div>
+
+                                <div class="relative group">
+                                    <input type="text" name="contact_number" placeholder="Enter Contact Number..." 
+                                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                    <i class="fa-solid fa-phone absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                </div>
+
+                                <div class="relative group md:col-span-2">
+                                    <input type="text" name="address" placeholder="Enter Business Address..." 
+                                           class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                    <i class="fa-solid fa-location-dot absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="relative group">
-                            <input type="password" name="password" placeholder="Enter Password..." 
-                                   class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"
-                                   required>
-                            <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                        <!-- Center-specific Fields -->
+                        <div id="centerFields" class="hidden space-y-6">
+                            <div class="relative group">
+                                <textarea name="description" placeholder="Enter center description, operating hours, and other important details..." rows="3"
+                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all"></textarea>
+                                <i class="fa-solid fa-align-left absolute right-4 top-8 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="relative group">
+                                    <input type="text" name="categories" placeholder="Enter accepted materials" 
+                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                    <i class="fa-solid fa-recycle absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                    <small class="text-white/60 mt-1 block">Separate with commas (plastic,paper,metal)</small>
+                                </div>
+
+                                <div class="relative group">
+                                    <input type="text" name="link" placeholder="Enter website or Maps URL (optional)" 
+                                        class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all">
+                                    <i class="fa-solid fa-link absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#436d2e] transition-colors"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit" 
@@ -140,5 +277,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleBusinessFields(userType) {
+            const businessFields = document.getElementById('businessFields');
+            const centerFields = document.getElementById('centerFields');
+            const fields = businessFields.getElementsByTagName('input');
+            const businessNameField = fields[0];
+            const addressField = fields[1];
+            
+            if (userType === 'business' || userType === 'center') {
+                businessFields.classList.remove('hidden');
+                for (let field of fields) {
+                    field.required = true;
+                }
+                
+                // Handle center-specific fields
+                if (userType === 'center') {
+                    centerFields.classList.remove('hidden');
+                    document.querySelector('textarea[name="description"]').required = true;
+                    document.querySelector('input[name="categories"]').required = true;
+                    businessNameField.placeholder = 'Enter Center Name...';
+                    addressField.placeholder = 'Enter Center Contact Address...';
+                } else {
+                    centerFields.classList.add('hidden');
+                    document.querySelector('textarea[name="description"]').required = false;
+                    document.querySelector('input[name="categories"]').required = false;
+                    businessNameField.placeholder = 'Enter Business Name...';
+                    addressField.placeholder = 'Enter Business Contact Address...';
+                }
+            } else {
+                businessFields.classList.add('hidden');
+                centerFields.classList.add('hidden');
+                for (let field of fields) {
+                    field.required = false;
+                    field.value = '';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
