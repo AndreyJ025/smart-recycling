@@ -128,11 +128,3 @@ git pull   # If you cloned from a repository
 docker-compose down
 docker-compose up -d --build
 ```
-
-## License
-
-[Your license information]
-
-## Contact
-
-[Your contact information]
