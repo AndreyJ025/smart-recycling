@@ -112,8 +112,31 @@ while ($row = $analytics['material_distribution']->fetch_assoc()) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .bg-overlay {
+            background: url('../assets/background.jpg');
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .bg-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        .bg-overlay > div {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
-<body class="font-[Poppins] bg-[#1b1b1b]">
+<body class="font-[Poppins]">
     <!-- Navigation -->
     <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
         <div class="max-w-7xl mx-auto px-4">
@@ -131,94 +154,96 @@ while ($row = $analytics['material_distribution']->fetch_assoc()) {
         </div>
     </nav>
 
-    <div class="pt-24 pb-12 px-4">
-        <div class="max-w-7xl mx-auto">
-            <!-- Date Range Filter -->
-            <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm mb-8">
-                <form method="GET" class="flex gap-4">
-                    <input type="date" name="start_date" value="<?php echo $start_date; ?>"
-                           class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
-                    <input type="date" name="end_date" value="<?php echo $end_date; ?>"
-                           class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
-                    <button type="submit" class="px-6 py-2 bg-[#436d2e] text-white rounded-lg hover:bg-opacity-90">
-                        <i class="fas fa-filter mr-2"></i>Apply Filter
-                    </button>
-                    <a href="generate-report.php?start_date=<?php echo $start_date; ?>&end_date=<?php echo $end_date; ?>" 
-                       class="px-6 py-2 border-2 border-[#436d2e] text-[#436d2e] rounded-lg hover:bg-[#436d2e] hover:text-white transition-all">
-                        <i class="fas fa-download mr-2"></i>Export Report
-                    </a>
-                </form>
-            </div>
+    <div class="bg-overlay">
+        <div class="relative pt-24 pb-12 px-4">
+            <div class="max-w-7xl mx-auto">
+                <!-- Date Range Filter -->
+                <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm mb-8">
+                    <form method="GET" class="flex gap-4">
+                        <input type="date" name="start_date" value="<?php echo $start_date; ?>"
+                               class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
+                        <input type="date" name="end_date" value="<?php echo $end_date; ?>"
+                               class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
+                        <button type="submit" class="px-6 py-2 bg-[#436d2e] text-white rounded-lg hover:bg-opacity-90">
+                            <i class="fas fa-filter mr-2"></i>Apply Filter
+                        </button>
+                        <a href="generate-report.php?start_date=<?php echo $start_date; ?>&end_date=<?php echo $end_date; ?>" 
+                           class="px-6 py-2 border-2 border-[#436d2e] text-[#436d2e] rounded-lg hover:bg-[#436d2e] hover:text-white transition-all">
+                            <i class="fas fa-download mr-2"></i>Export Report
+                        </a>
+                    </form>
+                </div>
 
-            <!-- Key Metrics -->
-            <div class="grid md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
-                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-recycle"></i></div>
-                    <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['total_items']); ?></div>
-                    <div class="text-white/60">Items Recycled</div>
+                <!-- Key Metrics -->
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-recycle"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['total_items']); ?></div>
+                        <div class="text-white/60">Items Recycled</div>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-star"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['total_points']); ?></div>
+                        <div class="text-white/60">Points Awarded</div>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-users"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['active_users']); ?></div>
+                        <div class="text-white/60">Active Users</div>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+                        <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-leaf"></i></div>
+                        <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($environmental_impact['plastic_saved']); ?></div>
+                        <div class="text-white/60">Plastic Items Saved</div>
+                    </div>
                 </div>
-                <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
-                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-star"></i></div>
-                    <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['total_points']); ?></div>
-                    <div class="text-white/60">Points Awarded</div>
-                </div>
-                <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
-                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-users"></i></div>
-                    <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($analytics['active_users']); ?></div>
-                    <div class="text-white/60">Active Users</div>
-                </div>
-                <div class="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
-                    <div class="text-[#436d2e] text-3xl mb-2"><i class="fa-solid fa-leaf"></i></div>
-                    <div class="text-2xl font-bold text-white mb-1"><?php echo number_format($environmental_impact['plastic_saved']); ?></div>
-                    <div class="text-white/60">Plastic Items Saved</div>
-                </div>
-            </div>
 
-            <!-- Charts -->
-            <div class="grid md:grid-cols-2 gap-8 mb-8">
-                <!-- Activity Timeline -->
-                <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm">
-                    <h2 class="text-2xl font-bold text-white mb-6">Daily Activity</h2>
-                    <canvas id="activityChart"></canvas>
+                <!-- Charts -->
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <!-- Activity Timeline -->
+                    <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm">
+                        <h2 class="text-2xl font-bold text-white mb-6">Daily Activity</h2>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                    
+                    <!-- Material Distribution -->
+                    <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm">
+                        <h2 class="text-2xl font-bold text-white mb-6">Material Distribution</h2>
+                        <canvas id="materialChart"></canvas>
+                    </div>
                 </div>
-                
-                <!-- Material Distribution -->
-                <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm">
-                    <h2 class="text-2xl font-bold text-white mb-6">Material Distribution</h2>
-                    <canvas id="materialChart"></canvas>
-                </div>
-            </div>
 
-            <!-- Center Performance -->
-            <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm mb-8">
-                <h2 class="text-2xl font-bold text-white mb-6">Center Performance</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="text-white/60 text-left">
-                                <th class="pb-4">Center</th>
-                                <th class="pb-4">Total Visits</th>
-                                <th class="pb-4">Items Collected</th>
-                                <th class="pb-4">Points Awarded</th>
-                                <th class="pb-4">Efficiency</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-white">
-                            <?php while($center = $analytics['center_performance']->fetch_assoc()): ?>
-                            <tr class="border-t border-white/10">
-                                <td class="py-4"><?php echo htmlspecialchars($center['name']); ?></td>
-                                <td class="py-4"><?php echo number_format($center['total_visits']); ?></td>
-                                <td class="py-4"><?php echo number_format($center['total_items']); ?></td>
-                                <td class="py-4"><?php echo number_format($center['total_points']); ?></td>
-                                <td class="py-4">
-                                    <?php echo $center['total_visits'] ? 
-                                        number_format($center['total_items'] / $center['total_visits'], 1) : 0; ?> 
-                                    items/visit
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
+                <!-- Center Performance -->
+                <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-6">Center Performance</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-white/60 text-left">
+                                    <th class="pb-4">Center</th>
+                                    <th class="pb-4">Total Visits</th>
+                                    <th class="pb-4">Items Collected</th>
+                                    <th class="pb-4">Points Awarded</th>
+                                    <th class="pb-4">Efficiency</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-white">
+                                <?php while($center = $analytics['center_performance']->fetch_assoc()): ?>
+                                <tr class="border-t border-white/10">
+                                    <td class="py-4"><?php echo htmlspecialchars($center['name']); ?></td>
+                                    <td class="py-4"><?php echo number_format($center['total_visits']); ?></td>
+                                    <td class="py-4"><?php echo number_format($center['total_items']); ?></td>
+                                    <td class="py-4"><?php echo number_format($center['total_points']); ?></td>
+                                    <td class="py-4">
+                                        <?php echo $center['total_visits'] ? 
+                                            number_format($center['total_items'] / $center['total_visits'], 1) : 0; ?> 
+                                        items/visit
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

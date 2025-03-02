@@ -60,22 +60,40 @@ $extendedStats = [
 ];
 
 // Fetch weekly activity data
-$weeklyActivity = $conn->query("
+$sql = "
     SELECT 
         DATE_FORMAT(created_at, '%a') as day,
         COUNT(*) as count
     FROM tbl_remit
     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
     GROUP BY DATE_FORMAT(created_at, '%a')
-    ORDER BY created_at DESC
-")->fetch_all(MYSQLI_ASSOC);
+    ORDER BY FIELD(day, 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')
+";
+
+$result = $conn->query($sql);
+
+if ($result === false) {
+    // Handle the error
+    echo '<div class="alert alert-danger">
+            <strong>Database Error:</strong> ' . $conn->error . '
+            <br>Query: ' . htmlspecialchars($sql) . '
+          </div>';
+    $data = []; // Empty array to avoid further errors
+} else {
+    $data = $result->fetch_all(MYSQLI_ASSOC);
+}
 
 // Format data for chart
 $chartData = [];
 $chartLabels = [];
-foreach ($weeklyActivity as $day) {
-    $chartLabels[] = $day['day'];
-    $chartData[] = $day['count'];
+if (isset($data) && is_array($data) && count($data) > 0) {
+    foreach ($data as $day) {
+        $chartLabels[] = $day['day'];
+        $chartData[] = $day['count'];
+    }
+} else {
+    // Handle the case where the data is not available
+    echo '<div class="alert alert-info">No data available to display.</div>';
 }
 
 ?>
