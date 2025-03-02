@@ -1,0 +1,60 @@
+services:
+  # PHP and Apache webserver
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=smart_recycling
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - smart_recycling_network
+
+  # MySQL database
+  db:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+      - ./docker/mysql-config:/etc/mysql/conf.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=smart_recycling
+      - MYSQL_USER=smart_recycling
+      - MYSQL_PASSWORD=smart_recycling_password
+      - LOAD_SAMPLE_DATA=true
+    restart: always
+    networks:
+      - smart_recycling_network
+
+  # phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=root_password
+    depends_on:
+      - db
+    networks:
+      - smart_recycling_network
+
+networks:
+  smart_recycling_network:
+    driver: bridge
+
+volumes:
+  mysql_data:

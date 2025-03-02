@@ -1,0 +1,11 @@
+.git
+.gitignore
+vendor/*/test*
+vendor/*/tests*
+vendor/*/docs*
+**/node_modules
+web/node_modules
+docker-compose.yml
+Dockerfile
+.dockerignore
+*.md

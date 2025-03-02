@@ -1,2 +1,65 @@
+# Environment configuration
+.env
+web/.env
+*.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# API and Database configuration
 /config/serpapi-config.php
 /config/serper-config.php
+/config/*-config.php
+database.php
+**/connection.php
+
+# User uploaded content
+/uploads/*
+/assets/uploads/*
+/assets/user-content/*
+
+# Credentials and certificates
+*.pem
+*.key
+*.cert
+*.p12
+google-credentials.json
+
+# Dependency directories
+/vendor/
+/node_modules/
+**/node_modules/
+composer.phar
+
+# Temporary files
+*.log
+*.cache
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+temp/
+tmp/
+cache/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+.project
+.buildpath
+.settings/
+nbproject/
+
+# Build artifacts
+build/
+dist/
+*.zip
+*.tar.gz
+
+# Docker artifacts
+*.env.docker
+docker-compose.override.yml

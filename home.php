@@ -1,6 +1,19 @@
 <?php 
 ob_clean(); 
 session_start(); 
+
+// Define a function to determine if user is logged in
+function isLoggedIn() {
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+// Create a function to generate links that either direct to the page or to login
+function getLinkWithAuth($path, $requiresAuth = true) {
+    if (!$requiresAuth || isLoggedIn()) {
+        return $path;
+    }
+    return "auth/login.php?redirect=" . urlencode($path);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,12 +124,13 @@ session_start();
             <button onclick="toggleDropdown()" 
                     class="dropdown-toggle flex items-center text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
                 <i class="fa-solid fa-user mr-2"></i>
-                <?php echo $_SESSION["user_fullname"] ?? "Profile" ?>
+                <?php echo isset($_SESSION["user_fullname"]) ? $_SESSION["user_fullname"] : "Sign In"; ?>
                 <i class="fa-solid fa-chevron-down ml-2 text-sm"></i>
             </button>
               
               <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-[#1b1b1b] shadow-lg border border-white/10 dropdown-menu">
                   <div class="py-2">
+                      <?php if(isLoggedIn()): ?>
                       <a href="user/profile.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
@@ -126,7 +140,7 @@ session_start();
                           </div>
                       </a>
               
-                      <a href="user/schedule-pickup.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="<?php echo getLinkWithAuth('user/schedule-pickup.php'); ?>" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-truck"></i>
@@ -135,7 +149,7 @@ session_start();
                           </div>
                       </a>
               
-                      <a href="user/rewards.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                      <a href="<?php echo getLinkWithAuth('user/rewards.php'); ?>" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
                           <div class="flex items-start">
                               <div class="w-6 mt-1">
                                   <i class="fa-solid fa-gift"></i>
@@ -165,6 +179,24 @@ session_start();
                               <div class="flex-1">Logout</div>
                           </div>
                       </a>
+                      <?php else: ?>
+                      <a href="auth/login.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-right-to-bracket"></i>
+                              </div>
+                              <div class="flex-1">Sign In</div>
+                          </div>
+                      </a>
+                      <a href="auth/signup.php" class="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all">
+                          <div class="flex items-start">
+                              <div class="w-6 mt-1">
+                                  <i class="fa-solid fa-user-plus"></i>
+                              </div>
+                              <div class="flex-1">Register</div>
+                          </div>
+                      </a>
+                      <?php endif; ?>
                   </div>
               </div>
             </div>
@@ -204,19 +236,21 @@ session_start();
               </div>
             <a href="main-feature/camera.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Camera</a>
             <a href="main-feature/chatbot.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">Chatbot</a>
+
             <!-- Profile Section with submenu -->
             <div class="space-y-2">
           <div class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
-              <i class="fa-solid fa-user mr-2"></i> <?php echo $_SESSION["user_fullname"] ?? "Profile" ?>
+              <i class="fa-solid fa-user mr-2"></i> <?php echo isset($_SESSION["user_fullname"]) ? $_SESSION["user_fullname"] : "Sign In"; ?>
           </div>
           <div class="pl-6 space-y-2">
+              <?php if(isLoggedIn()): ?>
               <a href="user/profile.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-user-circle mr-2"></i> View Profile
               </a>
-              <a href="user/schedule-pickup.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="<?php echo getLinkWithAuth('user/schedule-pickup.php'); ?>" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-truck mr-2"></i> Schedule Pickup
               </a>
-              <a href="user/rewards.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+              <a href="<?php echo getLinkWithAuth('user/rewards.php'); ?>" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
             <i class="fa-solid fa-gift mr-2"></i> Rewards
               </a>
               <?php if(isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] == 1): ?>
@@ -224,14 +258,24 @@ session_start();
             <i class="fa-solid fa-gauge-high mr-2"></i> Admin Dashboard
               </a>
               <?php endif; ?>
+              <?php else: ?>
+              <a href="auth/login.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-right-to-bracket mr-2"></i> Sign In
+              </a>
+              <a href="auth/signup.php" class="text-white/80 hover:bg-white hover:text-black px-3 py-2 rounded-md text-base transition-all flex items-center">
+            <i class="fa-solid fa-user-plus mr-2"></i> Register
+              </a>
+              <?php endif; ?>
           </div>
             </div>
             
+            <?php if(isLoggedIn()): ?>
             <hr class="border-white/10 my-2">
             
             <a href="index.php" class="text-white hover:bg-white hover:text-black px-3 py-2 rounded-md text-lg font-medium transition-all">
           <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
             </a>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -296,11 +340,11 @@ session_start();
             <div class="max-w-7xl mx-auto px-4">
                 <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-12">Quick Actions</h2>
                 <div class="grid md:grid-cols-3 gap-8">
-                    <a href="user/add-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
+                    <a href="<?php echo getLinkWithAuth('user/add-remit.php'); ?>" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
                         <div class="bg-[#436d2e] group-hover:bg-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                             <i class="fa-solid fa-recycle text-white group-hover:text-[#436d2e] text-2xl"></i>
                         </div>
-                        <h3 class="text-white text-2xl font-semibold mb-2">Recycle or Donate</h3>
+                        <h3 class="text-white text-2xl font-semibold mb-2">Recycle</h3>
                         <p class="text-white/70 group-hover:text-white/90">Start your eco-journey by recycling or donating items</p>
                     </a>
                     <a href="view-sortation.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
@@ -310,7 +354,7 @@ session_start();
                         <h3 class="text-white text-2xl font-semibold mb-2">Find Centers</h3>
                         <p class="text-white/70 group-hover:text-white/90">Locate recycling centers near you</p>
                     </a>
-                    <a href="user/view-user-remit.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
+                    <a href="<?php echo getLinkWithAuth('user/view-user-remit.php'); ?>" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
                         <div class="bg-[#436d2e] group-hover:bg-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                             <i class="fa-solid fa-clock-rotate-left text-white group-hover:text-[#436d2e] text-2xl"></i>
                         </div>
