@@ -1,13 +1,14 @@
 <?php
 session_start();
-include '../database.php';
+require_once '../database.php';
 
-if (!isset($_SESSION["user_id"])) {
-    header("Location: index.php");
+// Check if user is logged in, if not redirect to login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
     exit();
 }
 
-// Handle form submission
+// Rest of the page code
 if(isset($_POST['schedule_pickup'])) {
     $user_id = $_SESSION["user_id"];
     $pickup_date = $_POST['pickup_date'];

@@ -1,15 +1,12 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require_once '../database.php';
 
-// Check session
-if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
-    header("Location: index.php");
+// Check if user is logged in, if not redirect to login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
     exit();
 }
-
-include '../database.php';
 
 // Fetch centers
 $lstCenters = [];
@@ -164,7 +161,7 @@ if (isset($_POST['submit'])) {
                                 name="submit"
                                 class="w-full bg-[#436d2e] text-white font-bold text-lg rounded-xl py-4 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-paper-plane"></i>
-                            Submit Record
+                            Submit
                         </button>
                     </form>
                 </div>

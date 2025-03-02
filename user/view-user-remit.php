@@ -1,20 +1,17 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require_once '../database.php';
 
-include '../database.php';
-
-// Check user login
-if (!isset($_SESSION["user_id"])) {
-    header("Location: index.php");
+// Check if user is logged in, if not redirect to login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
     exit();
 }
 
 // Fetch total points
 $total_points_sql = "SELECT total_points FROM tbl_user WHERE id = ?";
 $stmt_points = $conn->prepare($total_points_sql);
-$stmt_points->bind_param("i", $_SESSION["user_id"]);
+stmt_points->bind_param("i", $_SESSION["user_id"]);
 $stmt_points->execute();
 $total_points_result = $stmt_points->get_result();
 $total_points = $total_points_result->fetch_assoc()["total_points"] ?? 0;
