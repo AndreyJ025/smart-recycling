@@ -72,6 +72,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
 $type_filter = isset($_GET['type']) ? $_GET['type'] : '';
 $filter = isset($_GET['filter']) ? $_GET['filter'] : '';
+$clear_filter = isset($_GET['clear']) ? true : false;
+
+// Determine which tab is active (for styling)
+$active_tab = $filter === 'bulk' ? 'bulk' : 'pickups';
+
+// If clear filter is requested, reset all filters and redirect
+if ($clear_filter) {
+    // Preserve the current tab when clearing filters
+    if ($filter === 'bulk') {
+        header("Location: pickup_management.php?filter=bulk");
+    } else {
+        header("Location: pickup_management.php");
+    }
+    exit();
+}
 
 // Query for pickups
 $pickup_query = "SELECT p.*, u.fullname, u.business_name, u.user_type 
@@ -87,7 +102,7 @@ if ($type_filter) {
     $pickup_query .= " AND p.frequency = '$type_filter'";
 }
 
-$pickup_query .= " ORDER BY p.pickup_date ASC, p.pickup_time ASC";
+$pickup_query .= " ORDER BY p.pickup_date ASC, p.pickup_time_slot ASC"; // Fixed column name
 
 $pickups = $conn->query($pickup_query);
 
@@ -100,8 +115,6 @@ $bulk_query = "SELECT b.*, u.fullname, u.business_name
 // Apply status filter
 if ($filter === 'bulk' && $status_filter) {
     $bulk_query .= " AND b.status = '$status_filter'";
-} elseif ($filter === 'bulk') {
-    $bulk_query .= " AND b.status = 'pending'";
 }
 
 $bulk_query .= " ORDER BY b.created_at DESC";
@@ -194,10 +207,12 @@ function getStatusMessage($status) {
                     <!-- Tabs -->
                     <div class="mb-8">
                         <div class="flex space-x-1">
-                            <button onclick="switchTab('pickups')" id="pickups-tab" class="px-4 py-2 bg-white/10 text-white rounded-t-lg font-medium <?php echo ($filter !== 'bulk') ? 'active-tab' : ''; ?>">
+                            <button onclick="switchTab('pickups')" id="pickups-tab" 
+                                   class="px-4 py-2 rounded-t-lg font-medium transition-colors <?php echo ($active_tab === 'pickups') ? 'bg-white/10 text-white' : 'bg-white/5 text-white/70'; ?>">
                                 Regular Pickups
                             </button>
-                            <button onclick="switchTab('bulk')" id="bulk-tab" class="px-4 py-2 bg-white/5 text-white/70 rounded-t-lg font-medium <?php echo ($filter === 'bulk') ? 'active-tab' : ''; ?>">
+                            <button onclick="switchTab('bulk')" id="bulk-tab" 
+                                   class="px-4 py-2 rounded-t-lg font-medium transition-colors <?php echo ($active_tab === 'bulk') ? 'bg-white/10 text-white' : 'bg-white/5 text-white/70'; ?>">
                                 Bulk Requests
                             </button>
                         </div>
@@ -205,30 +220,38 @@ function getStatusMessage($status) {
                     </div>
 
                     <!-- Regular Pickups Tab -->
-                    <div id="pickups-content" class="tab-content <?php echo ($filter === 'bulk') ? 'hidden' : ''; ?>">
+                    <div id="pickups-content" class="tab-content <?php echo ($active_tab === 'bulk') ? 'hidden' : ''; ?>">
                         <!-- Filters -->
                         <div class="flex flex-wrap gap-3 mb-6">
-                            <a href="?status=scheduled" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <span class="text-white/70 self-center mr-2 text-sm">Filter by:</span>
+                            
+                            <a href="?status=scheduled" class="px-3 py-1 <?php echo ($status_filter === 'scheduled') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Scheduled
                             </a>
-                            <a href="?status=in_transit" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?status=in_transit" class="px-3 py-1 <?php echo ($status_filter === 'in_transit') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 In Transit
                             </a>
-                            <a href="?status=arrived" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?status=arrived" class="px-3 py-1 <?php echo ($status_filter === 'arrived') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Arrived
                             </a>
-                            <a href="?status=completed" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?status=completed" class="px-3 py-1 <?php echo ($status_filter === 'completed') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Completed
                             </a>
-                            <a href="?type=weekly" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            
+                            <span class="text-white/70 self-center mx-2 text-sm">Frequency:</span>
+                            
+                            <a href="?type=weekly" class="px-3 py-1 <?php echo ($type_filter === 'weekly') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Weekly
                             </a>
-                            <a href="?type=monthly" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?type=monthly" class="px-3 py-1 <?php echo ($type_filter === 'monthly') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Monthly
                             </a>
-                            <a href="pickup_management.php" class="px-3 py-1 bg-[#436d2e]/50 hover:bg-[#436d2e] text-white rounded-full text-sm">
-                                Clear Filters
-                            </a>
+                            
+                            <?php if ($status_filter || $type_filter): ?>
+                                <a href="?clear=1" class="px-3 py-1 ml-2 bg-[#436d2e]/50 hover:bg-[#436d2e] text-white rounded-full text-sm transition-colors">
+                                    <i class="fas fa-times mr-1"></i> Clear Filters
+                                </a>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Pickups List -->
@@ -262,7 +285,7 @@ function getStatusMessage($status) {
                                                     </td>
                                                     <td class="px-6 py-4">
                                                         <?php echo date('M d, Y', strtotime($pickup['pickup_date'])); ?><br>
-                                                        <span class="text-sm text-white/50"><?php echo ucfirst($pickup['pickup_time']); ?></span>
+                                                        <span class="text-sm text-white/50"><?php echo ucfirst($pickup['pickup_time_slot']); ?></span>
                                                     </td>
                                                     <td class="px-6 py-4"><?php echo $pickup['items']; ?></td>
                                                     <td class="px-6 py-4">
@@ -296,24 +319,29 @@ function getStatusMessage($status) {
                     </div>
 
                     <!-- Bulk Requests Tab -->
-                    <div id="bulk-content" class="tab-content <?php echo ($filter !== 'bulk') ? 'hidden' : ''; ?>">
+                    <div id="bulk-content" class="tab-content <?php echo ($active_tab === 'pickups') ? 'hidden' : ''; ?>">
                         <!-- Filters -->
                         <div class="flex flex-wrap gap-3 mb-6">
-                            <a href="?filter=bulk&status=pending" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <span class="text-white/70 self-center mr-2 text-sm">Filter by status:</span>
+                            
+                            <a href="?filter=bulk&status=pending" class="px-3 py-1 <?php echo ($filter === 'bulk' && $status_filter === 'pending') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Pending
                             </a>
-                            <a href="?filter=bulk&status=approved" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?filter=bulk&status=approved" class="px-3 py-1 <?php echo ($filter === 'bulk' && $status_filter === 'approved') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Approved
                             </a>
-                            <a href="?filter=bulk&status=rejected" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?filter=bulk&status=rejected" class="px-3 py-1 <?php echo ($filter === 'bulk' && $status_filter === 'rejected') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Rejected
                             </a>
-                            <a href="?filter=bulk&status=completed" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm">
+                            <a href="?filter=bulk&status=completed" class="px-3 py-1 <?php echo ($filter === 'bulk' && $status_filter === 'completed') ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'; ?> text-white rounded-full text-sm transition-colors">
                                 Completed
                             </a>
-                            <a href="?filter=bulk" class="px-3 py-1 bg-[#436d2e]/50 hover:bg-[#436d2e] text-white rounded-full text-sm">
-                                Clear Filters
-                            </a>
+                            
+                            <?php if ($filter === 'bulk' && $status_filter): ?>
+                                <a href="?filter=bulk&clear=1" class="px-3 py-1 ml-2 bg-[#436d2e]/50 hover:bg-[#436d2e] text-white rounded-full text-sm transition-colors">
+                                    <i class="fas fa-times mr-1"></i> Clear Filters
+                                </a>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Bulk Requests List -->
@@ -566,7 +594,13 @@ function getStatusMessage($status) {
     </div>
 
     <script>
+        // Store the current active tab
+        let currentTab = '<?php echo $active_tab; ?>';
+        
         function switchTab(tab) {
+            // Update the current tab
+            currentTab = tab;
+            
             // Update URL with filter parameter
             let url = new URL(window.location.href);
             if (tab === 'bulk') {
@@ -574,6 +608,10 @@ function getStatusMessage($status) {
             } else {
                 url.searchParams.delete('filter');
             }
+            
+            // Always preserve status filters when switching tabs
+            // This allows each tab to have its own filter state
+            
             window.history.replaceState({}, '', url);
             
             // Show/hide content
@@ -581,15 +619,21 @@ function getStatusMessage($status) {
             document.getElementById('bulk-content').classList.toggle('hidden', tab === 'pickups');
             
             // Update tab styling
-            document.getElementById('pickups-tab').classList.toggle('bg-white/10', tab === 'pickups');
-            document.getElementById('pickups-tab').classList.toggle('bg-white/5', tab === 'bulk');
-            document.getElementById('pickups-tab').classList.toggle('text-white', tab === 'pickups');
-            document.getElementById('pickups-tab').classList.toggle('text-white/70', tab === 'bulk');
+            updateTabStyles();
+        }
+        
+        function updateTabStyles() {
+            // Update pickups tab
+            document.getElementById('pickups-tab').classList.toggle('bg-white/10', currentTab === 'pickups');
+            document.getElementById('pickups-tab').classList.toggle('bg-white/5', currentTab !== 'pickups');
+            document.getElementById('pickups-tab').classList.toggle('text-white', currentTab === 'pickups');
+            document.getElementById('pickups-tab').classList.toggle('text-white/70', currentTab !== 'pickups');
             
-            document.getElementById('bulk-tab').classList.toggle('bg-white/10', tab === 'bulk');
-            document.getElementById('bulk-tab').classList.toggle('bg-white/5', tab === 'pickups');
-            document.getElementById('bulk-tab').classList.toggle('text-white', tab === 'bulk');
-            document.getElementById('bulk-tab').classList.toggle('text-white/70', tab === 'pickups');
+            // Update bulk tab
+            document.getElementById('bulk-tab').classList.toggle('bg-white/10', currentTab === 'bulk');
+            document.getElementById('bulk-tab').classList.toggle('bg-white/5', currentTab !== 'bulk');
+            document.getElementById('bulk-tab').classList.toggle('text-white', currentTab === 'bulk');
+            document.getElementById('bulk-tab').classList.toggle('text-white/70', currentTab !== 'bulk');
         }
 
         function openPickupModal(pickup) {

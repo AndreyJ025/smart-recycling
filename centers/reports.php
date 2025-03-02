@@ -34,26 +34,6 @@ switch($date_range) {
         $date_range = 'month';
 }
 
-// Processing volume by material type
-$material_query = "SELECT 
-                    material_type, 
-                    SUM(quantity) as total_quantity 
-                   FROM tbl_processing 
-                   WHERE center_id = ? 
-                   AND created_at BETWEEN ? AND ? 
-                   AND status = 'completed'";
-
-if ($material_filter) {
-    $material_query .= " AND material_type = '$material_filter'";
-}
-
-$material_query .= " GROUP BY material_type ORDER BY total_quantity DESC";
-
-$stmt = $conn->prepare($material_query);
-$stmt->bind_param("iss", $center_id, $start_date, $end_date);
-$stmt->execute();
-$material_stats = $stmt->get_result();
-
 // Pickup statistics
 $pickup_query = "SELECT 
                   COUNT(*) as total_pickups,
@@ -67,21 +47,51 @@ $stmt->bind_param("ss", $start_date, $end_date);
 $stmt->execute();
 $pickup_stats = $stmt->get_result()->fetch_assoc();
 
-// Processing efficiency
-$efficiency_query = "SELECT 
-                      DATE_FORMAT(completion_date, '%Y-%m-%d') as process_date,
-                      COUNT(*) as batch_count,
-                      SUM(quantity) as total_processed
-                     FROM tbl_processing
-                     WHERE center_id = ?
-                     AND status = 'completed'
-                     AND completion_date BETWEEN ? AND ?
-                     GROUP BY DATE_FORMAT(completion_date, '%Y-%m-%d')
-                     ORDER BY process_date";
-$stmt = $conn->prepare($efficiency_query);
-$stmt->bind_param("iss", $center_id, $start_date, $end_date);
+// Inventory statistics - Fix SQL syntax error
+$inventory_query = "SELECT 
+                     material_type,
+                     SUM(quantity) as total_quantity
+                    FROM tbl_inventory
+                    WHERE center_id = ?";
+                    
+if ($material_filter) {
+    $inventory_query .= " AND material_type = ?";
+    $inventory_query .= " GROUP BY material_type"; // Add missing GROUP BY
+    $stmt = $conn->prepare($inventory_query);
+    
+    // Check if prepare failed
+    if ($stmt === false) {
+        echo "Error preparing inventory query: " . $conn->error;
+        exit();
+    }
+    
+    $stmt->bind_param("is", $center_id, $material_filter);
+} else {
+    $inventory_query .= " GROUP BY material_type"; // Add missing GROUP BY
+    $stmt = $conn->prepare($inventory_query);
+    
+    // Check if prepare failed
+    if ($stmt === false) {
+        echo "Error preparing inventory query: " . $conn->error;
+        exit();
+    }
+    
+    $stmt->bind_param("i", $center_id);
+}
+
 $stmt->execute();
-$efficiency_data = $stmt->get_result();
+$material_stats = $stmt->get_result();
+
+// Get all material types for filter dropdown
+$materials_query = "SELECT DISTINCT material_type FROM tbl_inventory WHERE center_id = ?";
+$stmt = $conn->prepare($materials_query);
+$stmt->bind_param("i", $center_id);
+$stmt->execute();
+$materials_result = $stmt->get_result();
+$materials = array();
+while ($row = $materials_result->fetch_assoc()) {
+    $materials[] = $row['material_type'];
+}
 
 // Capacity utilization over time
 $capacity_query = "SELECT 
@@ -99,30 +109,49 @@ $stmt->bind_param("i", $center_id);
 $stmt->execute();
 $capacity_data = $stmt->get_result();
 
-// Get all material types for filter dropdown
-$materials_query = "SELECT DISTINCT material_type FROM tbl_inventory WHERE center_id = ?";
-$stmt = $conn->prepare($materials_query);
-$stmt->bind_param("i", $center_id);
-$stmt->execute();
-$materials_result = $stmt->get_result();
-$materials = array();
-while ($row = $materials_result->fetch_assoc()) {
-    $materials[] = $row['material_type'];
+// Remittance statistics (replacing processing data)
+$remittance_query = "SELECT 
+                     r.item_name, 
+                     SUM(r.item_quantity) as total_quantity,
+                     SUM(r.points) as total_points
+                    FROM tbl_remit r
+                    WHERE r.sortation_center_id = ?
+                    AND r.created_at BETWEEN ? AND ?
+                    GROUP BY r.item_name
+                    ORDER BY total_quantity DESC";
+$stmt = $conn->prepare($remittance_query);
+
+// Check if prepare failed
+if ($stmt === false) {
+    echo "Error preparing remittance query: " . $conn->error;
+    exit();
 }
 
-// Summary statistics
-$summary_query = "SELECT 
-                   COUNT(DISTINCT batch_id) as total_batches,
-                   SUM(quantity) as total_processed,
-                   MAX(quantity) as largest_batch,
-                   AVG(quantity) as average_batch_size
-                  FROM tbl_processing
-                  WHERE center_id = ?
-                  AND created_at BETWEEN ? AND ?";
-$stmt = $conn->prepare($summary_query);
 $stmt->bind_param("iss", $center_id, $start_date, $end_date);
 $stmt->execute();
-$summary_stats = $stmt->get_result()->fetch_assoc();
+$remittance_stats = $stmt->get_result();
+
+// Time-series data for remittances
+$time_series_query = "SELECT 
+                      DATE_FORMAT(created_at, '%Y-%m-%d') as remit_date,
+                      SUM(item_quantity) as daily_quantity,
+                      COUNT(*) as transaction_count
+                     FROM tbl_remit
+                     WHERE sortation_center_id = ?
+                     AND created_at BETWEEN ? AND ?
+                     GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
+                     ORDER BY remit_date";
+$stmt = $conn->prepare($time_series_query);
+
+// Check if prepare failed
+if ($stmt === false) {
+    echo "Error preparing time series query: " . $conn->error;
+    exit();
+}
+
+$stmt->bind_param("iss", $center_id, $start_date, $end_date);
+$stmt->execute();
+$time_series_data = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -210,47 +239,52 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
                     <!-- Summary Statistics -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
-                            <h3 class="text-lg text-white/80 mb-1">Total Processed</h3>
+                            <h3 class="text-lg text-white/80 mb-1">Total Pickups</h3>
                             <p class="text-2xl font-bold text-white">
-                                <?php echo number_format($summary_stats['total_processed'], 2); ?> kg
+                                <?php echo number_format($pickup_stats['total_pickups']); ?>
                             </p>
                         </div>
                         
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
-                            <h3 class="text-lg text-white/80 mb-1">Processing Batches</h3>
+                            <h3 class="text-lg text-white/80 mb-1">Completed Pickups</h3>
                             <p class="text-2xl font-bold text-white">
-                                <?php echo number_format($summary_stats['total_batches']); ?>
+                                <?php echo number_format($pickup_stats['completed_pickups']); ?>
                             </p>
                         </div>
                         
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
-                            <h3 class="text-lg text-white/80 mb-1">Average Batch Size</h3>
+                            <h3 class="text-lg text-white/80 mb-1">Cancelled Pickups</h3>
                             <p class="text-2xl font-bold text-white">
-                                <?php echo number_format($summary_stats['average_batch_size'], 2); ?> kg
+                                <?php echo number_format($pickup_stats['cancelled_pickups']); ?>
                             </p>
                         </div>
                         
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
-                            <h3 class="text-lg text-white/80 mb-1">Largest Batch</h3>
+                            <h3 class="text-lg text-white/80 mb-1">On-Time Rate</h3>
                             <p class="text-2xl font-bold text-white">
-                                <?php echo number_format($summary_stats['largest_batch'], 2); ?> kg
+                                <?php 
+                                $completion_rate = ($pickup_stats['total_pickups'] > 0) 
+                                    ? round(($pickup_stats['completed_pickups'] / $pickup_stats['total_pickups']) * 100) 
+                                    : 0;
+                                echo $completion_rate . '%'; 
+                                ?>
                             </p>
                         </div>
                     </div>
 
-                    <!-- Material Processing Chart -->
+                    <!-- Materials Chart (modified to use remittance data) -->
                     <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl mb-8">
-                        <h2 class="text-2xl font-bold text-white mb-6">Material Processing Volume</h2>
+                        <h2 class="text-2xl font-bold text-white mb-6">Materials Collected</h2>
                         <div class="h-64">
                             <canvas id="materialsChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Processing Efficiency -->
+                    <!-- Activity Trends (modified to use remittance data) -->
                     <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl mb-8">
-                        <h2 class="text-2xl font-bold text-white mb-6">Processing Trends</h2>
+                        <h2 class="text-2xl font-bold text-white mb-6">Collection Trends</h2>
                         <div class="h-64">
-                            <canvas id="processChart"></canvas>
+                            <canvas id="trendsChart"></canvas>
                         </div>
                     </div>
 
@@ -372,7 +406,7 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
     <script>
         // Format data for charts
         document.addEventListener('DOMContentLoaded', function() {
-            // Materials Chart
+            // Materials Chart - Using remittance data instead of processing data
             const materialsCtx = document.getElementById('materialsChart').getContext('2d');
             const materialsChart = new Chart(materialsCtx, {
                 type: 'bar',
@@ -394,19 +428,26 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
                         ];
                         
                         $i = 0;
-                        while($row = $material_stats->fetch_assoc()) {
-                            echo "'" . ucfirst($row['material_type']) . "', ";
-                            $materials_data[] = $row['total_quantity'];
-                            $materials_labels[] = ucfirst($row['material_type']);
-                            $materials_colors[] = $colors[$i % count($colors)];
-                            $i++;
+                        // Add check for null result
+                        if ($remittance_stats && $remittance_stats->num_rows > 0) {
+                            while($row = $remittance_stats->fetch_assoc()) {
+                                echo "'" . ucfirst($row['item_name']) . "', ";
+                                $materials_data[] = $row['total_quantity'];
+                                $materials_labels[] = ucfirst($row['item_name']);
+                                $materials_colors[] = $colors[$i % count($colors)];
+                                $i++;
+                            }
+                        } else {
+                            echo "'No Data'";
+                            $materials_data[] = 0;
+                            $materials_colors[] = $colors[0];
                         }
                         ?>
                     ],
                     datasets: [{
-                        label: 'Processed Material (kg)',
-                        data: [<?php echo implode(', ', $materials_data); ?>],
-                        backgroundColor: [<?php echo "'" . implode("', '", $materials_colors) . "'"; ?>],
+                        label: 'Collected Materials (qty)',
+                        data: [<?php echo !empty($materials_data) ? implode(', ', $materials_data) : '0'; ?>],
+                        backgroundColor: [<?php echo !empty($materials_colors) ? "'" . implode("', '", $materials_colors) . "'" : "'rgba(67, 109, 46, 0.8)'"; ?>],
                         borderWidth: 0,
                         borderRadius: 4
                     }]
@@ -441,33 +482,56 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
                 }
             });
 
-            // Processing Trends Chart
-            const processCtx = document.getElementById('processChart').getContext('2d');
-            const processChart = new Chart(processCtx, {
+            // Trends Chart - Using remittance time series data
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            const trendsChart = new Chart(trendsCtx, {
                 type: 'line',
                 data: {
                     labels: [
                         <?php
-                        $process_dates = array();
-                        $process_quantities = array();
+                        $trend_dates = array();
+                        $trend_quantities = array();
+                        $trend_counts = array();
                         
-                        while($row = $efficiency_data->fetch_assoc()) {
-                            echo "'" . date('M d', strtotime($row['process_date'])) . "', ";
-                            $process_dates[] = date('M d', strtotime($row['process_date']));
-                            $process_quantities[] = $row['total_processed'];
+                        // Add check for null result
+                        if ($time_series_data && $time_series_data->num_rows > 0) {
+                            while($row = $time_series_data->fetch_assoc()) {
+                                echo "'" . date('M d', strtotime($row['remit_date'])) . "', ";
+                                $trend_dates[] = date('M d', strtotime($row['remit_date']));
+                                $trend_quantities[] = $row['daily_quantity'];
+                                $trend_counts[] = $row['transaction_count'];
+                            }
+                        } else {
+                            echo "'No Data'";
+                            $trend_quantities[] = 0;
+                            $trend_counts[] = 0;
                         }
                         ?>
                     ],
-                    datasets: [{
-                        label: 'Daily Processing Volume (kg)',
-                        data: [<?php echo implode(', ', $process_quantities); ?>],
-                        borderColor: 'rgba(67, 109, 46, 1)',
-                        backgroundColor: 'rgba(67, 109, 46, 0.2)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: 'rgba(67, 109, 46, 1)',
-                        pointRadius: 4
-                    }]
+                    datasets: [
+                        {
+                            label: 'Items Collected',
+                            data: [<?php echo !empty($trend_quantities) ? implode(', ', $trend_quantities) : '0'; ?>],
+                            borderColor: 'rgba(67, 109, 46, 1)',
+                            backgroundColor: 'rgba(67, 109, 46, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(67, 109, 46, 1)',
+                            pointRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Transactions',
+                            data: [<?php echo !empty($trend_counts) ? implode(', ', $trend_counts) : '0'; ?>],
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -475,10 +539,32 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
                     scales: {
                         y: {
                             beginAtZero: true,
+
+                            position: 'left',
                             grid: {
                                 color: 'rgba(255, 255, 255, 0.1)'
                             },
                             ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Items',
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Transactions',
                                 color: 'rgba(255, 255, 255, 0.7)'
                             }
                         },
@@ -502,7 +588,7 @@ $summary_stats = $stmt->get_result()->fetch_assoc();
                             backgroundColor: 'rgba(0, 0, 0, 0.7)',
                             titleColor: 'rgba(255, 255, 255, 0.9)',
                             bodyColor: 'rgba(255, 255, 255, 0.9)',
-                            displayColors: false
+                            displayColors: true
                         }
                     }
                 }

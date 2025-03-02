@@ -70,6 +70,21 @@ $inventory = $stmt->get_result();
     </style>
 </head>
 <body class="font-[Poppins]">
+
+    <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <img src="../assets/logo.png" alt="EcoLens Logo" class="h-8">
+                    <span class="text-xl font-bold text-white">EcoLens</span>
+                </div>
+                <a href="dashboard.php" class="text-white hover:text-[#436d2e] transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <div class="bg-overlay">
         <div class="relative min-h-screen pt-20 pb-12">
             <div class="container mx-auto px-4">
