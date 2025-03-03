@@ -1,6 +1,5 @@
 <?php ob_clean(); session_start(); 
 
-
 require_once '../database.php';
 
 $faqs = $conn->query("SELECT question FROM tbl_faqs WHERE is_published = 1 ORDER BY created_at DESC");
@@ -15,6 +14,7 @@ while ($row = $faqs->fetch_assoc()) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>EcoLens AI Assistant</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js"></script>
@@ -24,7 +24,9 @@ while ($row = $faqs->fetch_assoc()) {
         <style>
             /* Base Layout */
             body {
-                overflow: hidden;
+                overflow-x: hidden;
+                font-family: 'Poppins', sans-serif;
+                background-color: #0f0f0f;
             }
             
             .bg-overlay {
@@ -34,7 +36,6 @@ while ($row = $faqs->fetch_assoc()) {
                 background-position: center;
                 background-attachment: fixed;
                 position: relative;
-                overflow: hidden;
             }
             
             .bg-overlay::before {
@@ -44,20 +45,8 @@ while ($row = $faqs->fetch_assoc()) {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-            }
-            
-            .bg-overlay > div {
-                position: relative;
-                z-index: 1;
-                height: 100vh;
-                overflow-y: auto;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-            
-            .bg-overlay > div::-webkit-scrollbar {
-                display: none;
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(2px);
             }
             
             /* Chat Content */
@@ -65,7 +54,8 @@ while ($row = $faqs->fetch_assoc()) {
                 max-height: calc(100vh - 320px);
                 overflow-y: auto;
                 scrollbar-width: thin;
-                scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                padding-right: 6px;
             }
             
             .chat-container::-webkit-scrollbar {
@@ -77,47 +67,91 @@ while ($row = $faqs->fetch_assoc()) {
             }
             
             .chat-container::-webkit-scrollbar-thumb {
-                background-color: rgba(255, 255, 255, 0.1);
+                background-color: rgba(255, 255, 255, 0.2);
                 border-radius: 20px;
             }
             
-            /* Text Formatting */
-            .prose blockquote {
-                white-space: pre-line;
-                line-height: 1.6;
-                padding: 1rem;
+            /* Message Styling */
+            .user-message {
+                background: linear-gradient(135deg, #436d2e40 0%, #436d2e70 100%);
+                border-radius: 18px 18px 0 18px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                margin-left: auto;
+                max-width: 80%;
+                border: 1px solid rgba(67, 109, 46, 0.3);
             }
             
-            .prose blockquote ul {
-                margin-left: 1.5rem;
+            .ai-message {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 18px 18px 18px 0;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                max-width: 80%;
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
             
-            .main-point {
-                font-size: 1.5rem;
-                font-weight: 700;
-                margin-top: 0.75rem;
-                margin-bottom: 0.5rem;
+            /* Animation Effects */
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
             
-            .sub-point {
-                font-size: 1rem;
-                margin-left: 1.5rem;
-                color: rgba(255, 255, 255, 0.8);
+            .animate-slide-up {
+                animation: slideUp 0.3s ease forwards;
             }
             
-            /* Interactive Elements */
-            .faq_item {
-                transform: translateY(0);
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            
+            .faq-item {
                 transition: all 0.2s ease;
             }
             
-            .faq_item:hover {
+            .faq-item:hover {
+                background-color: rgba(67, 109, 46, 0.3);
                 transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            }
+            
+            /* Typing Indicator */
+            .typing-dot {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #fff;
+                margin: 0 2px;
+                opacity: 0.7;
+            }
+            
+            .typing-dot:nth-child(1) {
+                animation: typing 1s infinite 0.1s;
+            }
+            
+            .typing-dot:nth-child(2) {
+                animation: typing 1s infinite 0.2s;
+            }
+            
+            .typing-dot:nth-child(3) {
+                animation: typing 1s infinite 0.3s;
+            }
+            
+            @keyframes typing {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-5px); }
+            }
+            
+            /* Chat Input Focus Effect */
+            .chat-input:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(67, 109, 46, 0.5);
+                border-color: #436d2e;
             }
         </style>
     </head>
-    <body class="font-[Poppins]">
-        <!-- Navigation -->
+    <body>
+        <!-- Original Navigation -->
         <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center">
@@ -137,30 +171,87 @@ while ($row = $faqs->fetch_assoc()) {
 
         <!-- Main Content -->
         <div class="bg-overlay">
-            <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="relative min-h-screen pt-20 pb-10 px-4">
                 <div class="max-w-4xl mx-auto">
-                    <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">AI Recycling Assistant</h2>
-                    <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Get AI guidance on recycling, upcycling, and sustainable practices. Ask any question.</p>
+                    <div class="text-center mb-8 animate-slide-up">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">AI Recycling Assistant</h2>
+                        <p class="text-white/70 max-w-2xl mx-auto">Get expert guidance on sustainable practices and recycling solutions</p>
+                    </div>
 
-                    <!-- Chat Container -->
-                    <div class="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+                    <!-- Chat Interface Container -->
+                    <div class="bg-black/40 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 shadow-xl animate-slide-up">
+                        <!-- Chat Header -->
+                        <div class="bg-[#436d2e]/20 p-4 border-b border-white/10 flex items-center gap-3">
+                            <div class="bg-[#436d2e] p-2 rounded-full">
+                                <i class="fa-solid fa-robot text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">EcoLens Assistant</h3>
+                                <p class="text-white/60 text-xs">Online and ready to help</p>
+                            </div>
+                        </div>
+                        
                         <!-- Chat History -->
-                        <div id="chat-history" class="chat-container space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-4">
-                            <!-- FAQ and messages will be populated here -->
+                        <div id="chat-history" class="chat-container p-6 space-y-6" style="min-height: 400px; max-height: 60vh">
+                            <!-- Loading indicator -->
+                            <div id="loading" class="flex justify-center items-center h-32">
+                                <div class="bg-white/10 rounded-full px-4 py-2 flex items-center gap-2">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <span class="text-white/70 text-sm ml-2">Loading assistant...</span>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Chat Input -->
-                        <form id="form" class="relative">
-                            <input id="prompt" 
-                                class="w-full px-6 py-4 bg-white/10 text-white rounded-xl border border-white/20 focus:outline-none focus:border-[#436d2e] transition-all pl-12"
-                                placeholder="Ask me anything about recycling..."
-                            />
-                            <i class="fa-solid fa-message absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></i>
-                            <button type="submit" 
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#436d2e] text-white rounded-full flex items-center justify-center hover:bg-opacity-90 transition-all">
-                                <i class="fa-solid fa-paper-plane text-sm"></i>
-                            </button>
-                        </form>
+                        <div class="p-4 bg-black/20 border-t border-white/10">
+                            <form id="form" class="relative">
+                                <input id="prompt" 
+                                    class="chat-input w-full px-5 py-4 bg-white/10 text-white rounded-xl border border-white/20 transition-all pl-12 pr-24"
+                                    placeholder="Ask me anything about recycling..."
+                                />
+                                <i class="fa-solid fa-message absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+                                <button type="submit" 
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-[#436d2e] hover:bg-[#436d2e]/80 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                                    <span class="text-sm">Send</span>
+                                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Features Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                        <div class="bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg animate-slide-up" style="animation-delay: 0.1s">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-blue-500/20 p-2 rounded-lg">
+                                    <i class="fas fa-lightbulb text-blue-300"></i>
+                                </div>
+                                <h3 class="text-white font-semibold">Smart Tips</h3>
+                            </div>
+                            <p class="text-sm text-white/70">Get expert advice on recycling different materials and reducing waste.</p>
+                        </div>
+                        
+                        <div class="bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg animate-slide-up" style="animation-delay: 0.2s">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-green-500/20 p-2 rounded-lg">
+                                    <i class="fas fa-leaf text-green-300"></i>
+                                </div>
+                                <h3 class="text-white font-semibold">Eco Solutions</h3>
+                            </div>
+                            <p class="text-sm text-white/70">Discover sustainable alternatives for everyday products and practices.</p>
+                        </div>
+                        
+                        <div class="bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg animate-slide-up" style="animation-delay: 0.3s">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-amber-500/20 p-2 rounded-lg">
+                                    <i class="fas fa-recycle text-amber-300"></i>
+                                </div>
+                                <h3 class="text-white font-semibold">Waste Guide</h3>
+                            </div>
+                            <p class="text-sm text-white/70">Learn proper sorting techniques and local recycling regulations.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,10 +259,10 @@ while ($row = $faqs->fetch_assoc()) {
 
         <script>
             function scrollToDocumentBottom() {
-                window.scrollTo({
-                    top: document.documentElement.scrollHeight,
-                    behavior: 'smooth'
-                });
+                const chatContainer = document.querySelector("#chat-history");
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
             }
 
             // FAQ System
@@ -185,39 +276,57 @@ while ($row = $faqs->fetch_assoc()) {
                     const data = await response.json();
                     
                     if (historyElement) {
-                        // Add user question
+                        // Add user question with improved styling
                         historyElement.innerHTML += `
-                            <div class="bg-white/20 rounded-lg p-4 mb-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <div class="bg-green-500 p-2 rounded-full">
-                                        <i class="fa-solid fa-circle-user text-white"></i>
-                                    </div>
-                                    <span class="text-white font-bold">User</span>
+                            <div class="flex flex-col animate-slide-up mb-6">
+                                <div class="flex justify-end mb-1">
+                                    <div class="text-xs text-white/70 mr-2">You</div>
                                 </div>
-                                <div class="prose prose-invert">
-                                    <blockquote class="text-white/90 leading-relaxed">
-                                        ${questionsFAQ[userMessageIndex]}
-                                    </blockquote>
+                                <div class="user-message p-4">
+                                    <p class="text-white">${questionsFAQ[userMessageIndex]}</p>
                                 </div>
                             </div>`;
             
-                        // Add AI response
+                        // Show typing indicator
                         historyElement.innerHTML += `
-                            <div class="bg-white/20 rounded-lg p-4 mb-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <div class="bg-green-500 p-2 rounded-full">
-                                        <i class="fa-solid fa-robot text-white"></i>
+                            <div id="typing" class="flex flex-col mb-6 animate-slide-up">
+                                <div class="flex items-center mb-1 gap-2">
+                                    <div class="bg-[#436d2e] h-6 w-6 rounded-full flex items-center justify-center">
+                                        <i class="fa-solid fa-robot text-white text-xs"></i>
                                     </div>
-                                    <span class="text-white font-bold">AI Assistant</span>
+                                    <div class="text-xs text-white/70">AI Assistant</div>
                                 </div>
-                                <div class="prose prose-invert">
-                                    <blockquote class="text-white/90 leading-relaxed">
-                                        ${data.answer}
-                                    </blockquote>
+                                <div class="ai-message py-3 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                    </div>
                                 </div>
                             </div>`;
-            
+                        
                         scrollToDocumentBottom();
+                        
+                        // Remove typing indicator after 1 second and show response
+                        setTimeout(() => {
+                            document.getElementById('typing').remove();
+                            
+                            // Add AI response with improved styling
+                            historyElement.innerHTML += `
+                                <div class="flex flex-col animate-slide-up mb-6">
+                                    <div class="flex items-center mb-1 gap-2">
+                                        <div class="bg-[#436d2e] h-6 w-6 rounded-full flex items-center justify-center">
+                                            <i class="fa-solid fa-robot text-white text-xs"></i>
+                                        </div>
+                                        <div class="text-xs text-white/70">AI Assistant</div>
+                                    </div>
+                                    <div class="ai-message p-4">
+                                        <div class="text-white/90 whitespace-pre-line">${data.answer}</div>
+                                    </div>
+                                </div>`;
+                                
+                            scrollToDocumentBottom();
+                        }, 1000);
                     }
                 } catch (error) {
                     console.error("Error fetching FAQ answer:", error);
@@ -246,8 +355,8 @@ while ($row = $faqs->fetch_assoc()) {
 
                             ### **STRUCTURE**
                             - Use **clear, descriptive titles** in **ALL CAPS**
-                            - Organize content in **bullet points (•)**
-                            - Use **sub-bullets (>)** for details
+                            - Organize content in **bullet points**
+                            - Use **sub-bullets** for details
                             - Add **emoji icons** where relevant
                             - Include **line breaks** between major sections
 
@@ -293,56 +402,95 @@ while ($row = $faqs->fetch_assoc()) {
                 event.preventDefault();
         
                 try {
-                    const userInput = promptInput.value;
-                    promptInput.value = "";
+                    const userInput = promptInput.value.trim();
+                    if (!userInput) return;
                     
-                    // Add user message to chat
+                    promptInput.value = "";
+                    promptInput.setAttribute('disabled', 'disabled');
+                    
+                    // Add user message with improved styling
                     historyElement.innerHTML += `
-                        <div class="bg-white/20 rounded-lg p-4 mb-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="bg-green-500 p-2 rounded-full">
-                                    <i class="fa-solid fa-circle-user text-white"></i>
-                                </div>
-                                <span class="text-white font-bold">User</span>
+                        <div class="flex flex-col animate-slide-up mb-6">
+                            <div class="flex justify-end mb-1">
+                                <div class="text-xs text-white/70 mr-2">You</div>
                             </div>
-                            <div class="prose prose-invert">
-                                <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
-                                    ${userInput}
-                                </blockquote>
+                            <div class="user-message p-4">
+                                <p class="text-white">${userInput}</p>
                             </div>
                         </div>`;
+                    
+                    // Show typing indicator
+                    historyElement.innerHTML += `
+                        <div id="typing" class="flex flex-col mb-6 animate-slide-up">
+                            <div class="flex items-center mb-1 gap-2">
+                                <div class="bg-[#436d2e] h-6 w-6 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="text-xs text-white/70">AI Assistant</div>
+                            </div>
+                            <div class="ai-message py-3 px-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    
+                    scrollToDocumentBottom();
         
                     // Get AI response
                     const response = await chat.sendMessage(userInput);
                     const responseText = response.response.text();
+                    
+                    // Remove typing indicator
+                    document.getElementById('typing').remove();
         
-                    // Add AI response to chat
+                    // Add AI response with improved styling
                     historyElement.innerHTML += `
-                        <div class="bg-white/20 rounded-lg p-4 mb-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="bg-green-500 p-2 rounded-full">
-                                    <i class="fa-solid fa-robot text-white"></i>
+                        <div class="flex flex-col animate-slide-up mb-6">
+                            <div class="flex items-center mb-1 gap-2">
+                                <div class="bg-[#436d2e] h-6 w-6 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-robot text-white text-xs"></i>
                                 </div>
-                                <span class="text-white font-bold">AI Assistant</span>
+                                <div class="text-xs text-white/70">AI Assistant</div>
                             </div>
-                            <div class="prose prose-invert">
-                                <blockquote class="text-white/90 leading-relaxed whitespace-pre-line">
-                                    ${responseText}
-                                </blockquote>
+                            <div class="ai-message p-4">
+                                <div class="text-white/90 whitespace-pre-line">${responseText}</div>
                             </div>
                         </div>`;
         
+                    promptInput.removeAttribute('disabled');
+                    promptInput.focus();
                     scrollToDocumentBottom();
+                    
                 } catch (error) {
                     console.error("Chat error:", error);
-                    // Show error message in chat
+                    
+                    // Remove typing indicator if it exists
+                    const typingElement = document.getElementById('typing');
+                    if (typingElement) typingElement.remove();
+                    
+                    // Show error message
                     historyElement.innerHTML += `
-                        <div class="bg-red-500/20 text-red-200 p-4 rounded-lg mt-4">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <p class="font-medium">Sorry, there was an error processing your request.</p>
+                        <div class="flex flex-col animate-slide-up mb-6">
+                            <div class="flex items-center mb-1 gap-2">
+                                <div class="bg-red-500 h-6 w-6 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-exclamation text-white text-xs"></i>
+                                </div>
+                                <div class="text-xs text-white/70">System</div>
+                            </div>
+                            <div class="bg-red-500/20 p-4 rounded-xl border border-red-500/30">
+                                <p class="text-white/90 flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
+                                    Sorry, there was an error processing your request. Please try again.
+                                </p>
                             </div>
                         </div>`;
+                        
+                    promptInput.removeAttribute('disabled');
+                    promptInput.focus();
+                    scrollToDocumentBottom();
                 }
             });
         
@@ -362,26 +510,49 @@ while ($row = $faqs->fetch_assoc()) {
                         });
                     }
         
-                    // Initialize FAQ section
-                    historyElement.innerHTML = `
-                        <div class="text-center mb-8">
-                            <h2 class="text-white text-2xl font-bold mb-4">Frequently Asked Questions</h2>
+                    // Remove loading indicator
+                    document.getElementById('loading').remove();
+        
+                    // Add welcome message
+                    historyElement.innerHTML += `
+                        <div class="flex flex-col animate-slide-up mb-6">
+                            <div class="flex items-center mb-1 gap-2">
+                                <div class="bg-[#436d2e] h-6 w-6 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="text-xs text-white/70">AI Assistant</div>
+                            </div>
+                            <div class="ai-message p-4">
+                                <p class="text-white/90 mb-4">👋 Hello! I'm your EcoLens AI assistant. I can help with recycling information, sustainable practices, and eco-friendly tips. How can I assist you today?</p>
+                                
+                                <p class="text-white/80 font-medium mb-3">Popular Questions:</p>
+                                
+                                <div class="space-y-2">
+                                    ${questionsFAQ.slice(0, 5).map((q, i) => `
+                                        <div class="faq-item bg-white/10 hover:bg-[#436d2e]/30 rounded-lg py-2 px-3 cursor-pointer border border-white/5" onclick="sendQuestion(${i})">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fa-solid fa-circle-question text-[#436d2e] text-sm"></i>
+                                                <span class="text-white/90 text-sm">${q}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>`;
         
-                    questionsFAQ.forEach((element, i) => {
-                        historyElement.innerHTML += `
-                            <div class="faq_item bg-white/20 rounded-lg p-4 mb-4 cursor-pointer hover:bg-white/30 transition-all" 
-                                 onclick="sendQuestion(${i});">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-circle-question text-green-500"></i>
-                                    <span class="text-white">${element}</span>
-                                </div>
-                            </div>`;
-                    });
-        
                     scrollToDocumentBottom();
+                    promptInput.focus();
                 } catch (error) {
                     console.error("Start chat error:", error);
+                    document.getElementById('loading').innerHTML = `
+                        <div class="flex justify-center">
+                            <div class="bg-red-500/20 text-white/90 px-4 py-3 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                                    <span>Could not load the AI assistant. Please refresh the page.</span>
+                                </div>
+                            </div>
+                        </div>`;
                 }
             }
         

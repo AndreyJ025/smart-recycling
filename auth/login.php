@@ -4,7 +4,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $error_msg = '';
-$redirect_url = isset($_GET['redirect']) ? $_GET['redirect'] : '../home.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     include '../database.php';
@@ -31,15 +30,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         error_log("Login successful - User ID: " . $_SESSION["user_id"] . " Admin: " . $_SESSION["is_admin"] . " Type: " . $_SESSION["user_type"]);
         
-        // Get redirect URL from form or fall back to default redirects
-        $redirect = isset($_POST['redirect']) && !empty($_POST['redirect']) 
-                  ? $_POST['redirect'] 
-                  : ($user['is_admin'] ? '../admin/admin-dashboard.php' : 
-                    ($user['user_type'] === 'business' ? '../business/dashboard.php' : 
-                    ($user['user_type'] === 'center' ? '../centers/dashboard.php' : '../home.php')));
-        
-        header("Location: " . $redirect);
-        exit();
+        // Updated redirect logic - Admin and regular users both go to home.php
+        if ($user['is_admin'] == 1) {
+            // Admin users go to home page
+            header("Location: ../home.php");
+            exit();
+        } else {
+            // Non-admin users are directed based on user_type
+            switch ($user['user_type']) {
+                case 'business':
+                    header("Location: ../business/dashboard.php");
+                    break;
+                case 'center':
+                    header("Location: ../centers/dashboard.php");
+                    break;
+                case 'user':
+                    // Regular users go to home page
+                    header("Location: ../home.php");
+                    break;
+                default:
+                    // Default fallback for any other user type
+                    header("Location: ../home.php");
+                    break;
+            }
+            exit();
+        }
     } else {
         $error_msg = "Invalid email or password.";
     }
@@ -112,8 +127,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
                     <!-- Login Form -->
                     <form method="POST" class="space-y-6">
-                        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect_url); ?>">
-                        
                         <div class="relative group">
                             <input type="email" 
                                    name="email" 

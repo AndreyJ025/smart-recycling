@@ -46,17 +46,6 @@ $stmt->bind_param("i", $center_id);
 $stmt->execute();
 $inventory_stats = $stmt->get_result()->fetch_assoc();
 
-// Get today's processing batches
-$today = date('Y-m-d');
-$processing_query = "SELECT COUNT(*) as today_batches, 
-                      SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_batches
-                     FROM tbl_processing 
-                     WHERE center_id = ? AND DATE(created_at) = ?";
-$stmt = $conn->prepare($processing_query);
-$stmt->bind_param("is", $center_id, $today);
-$stmt->execute();
-$processing_stats = $stmt->get_result()->fetch_assoc();
-
 // Get pending pickups
 $pickup_query = "SELECT COUNT(*) as pending_pickups
                 FROM tbl_pickups 
@@ -106,6 +95,7 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
     </style>
 </head>
 <body class="font-[Poppins]">
+    <!-- Updated Navigation Bar to match Business Dashboard -->
     <nav class="fixed w-full bg-[#1b1b1b] py-4 z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center">
@@ -113,12 +103,34 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                     <img src="../assets/logo.png" alt="EcoLens Logo" class="h-8">
                     <span class="text-xl font-bold text-white">EcoLens</span>
                 </div>
-                <div class="flex items-center gap-6">
-                    <span class="text-white">Welcome, <?php echo htmlspecialchars($_SESSION['user_fullname']); ?></span>
-                    <a href="../index.php" class="text-red-400 hover:text-red-300 transition-all">
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="dashboard.php" class="text-white hover:text-[#436d2e] transition-all font-medium">
+                        <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                    </a>
+                    <a href="profile.php" class="text-white hover:text-[#436d2e] transition-all">
+                        <i class="fas fa-user mr-1"></i> Profile
+                    </a>
+                    <a href="../index.php" class="text-white hover:text-[#436d2e] transition-all">
                         <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
                 </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-white hover:text-[#436d2e] transition-all">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu (hidden by default) -->
+            <div id="mobile-menu" class="hidden pt-4 pb-2">
+                <a href="dashboard.php" class="block py-2 text-white hover:text-[#436d2e]">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </a>
+                <a href="profile.php" class="block py-2 text-white hover:text-[#436d2e]">
+                    <i class="fas fa-user mr-2"></i> Profile
+                </a>
+                <a href="../index.php" class="block py-2 text-white hover:text-[#436d2e]">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
             </div>
         </div>
     </nav>
@@ -129,8 +141,8 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                 <div class="max-w-6xl mx-auto">
                     <h1 class="text-3xl font-bold text-white mb-8">Recycling Center Dashboard</h1>
                     
-                    <!-- Statistics Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- Statistics Cards - Adjusted to fill space better with 3 cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
                             <h3 class="text-lg text-white/80 mb-1">Inventory Usage</h3>
                             <p class="text-2xl font-bold text-white">
@@ -155,16 +167,6 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                         </div>
                         
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
-                            <h3 class="text-lg text-white/80 mb-1">Today's Batches</h3>
-                            <p class="text-2xl font-bold text-white">
-                                <?php echo $processing_stats['today_batches'] ?? 0; ?>
-                                <span class="text-sm text-white/60">
-                                    (<?php echo $processing_stats['completed_batches'] ?? 0; ?> completed)
-                                </span>
-                            </p>
-                        </div>
-                        
-                        <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
                             <h3 class="text-lg text-white/80 mb-1">Pending Pickups</h3>
                             <p class="text-2xl font-bold text-white">
                                 <?php echo $pickup_stats['pending_pickups'] ?? 0; ?>
@@ -173,23 +175,15 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <!-- Quick Actions -->
+                        <!-- Quick Actions - Adjusted for better layout with 3 items -->
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
                             <h2 class="text-2xl font-bold text-white mb-6">Management Center</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <a href="inventory.php" class="flex items-center gap-3 p-4 bg-white/10 rounded-xl text-white hover:bg-[#436d2e]/50 transition-all">
                                     <i class="fas fa-box-open text-xl w-8"></i>
                                     <div>
                                         <h3 class="font-semibold">Inventory</h3>
-                                        <p class="text-sm text-white/70">Track materials and capacity</p>
-                                    </div>
-                                </a>
-                                
-                                <a href="processing.php" class="flex items-center gap-3 p-4 bg-white/10 rounded-xl text-white hover:bg-[#436d2e]/50 transition-all">
-                                    <i class="fas fa-recycle text-xl w-8"></i>
-                                    <div>
-                                        <h3 class="font-semibold">Processing</h3>
-                                        <p class="text-sm text-white/70">Manage material batches</p>
+                                        <p class="text-sm text-white/70">Track materials</p>
                                     </div>
                                 </a>
                                 
@@ -197,7 +191,7 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                                     <i class="fas fa-truck text-xl w-8"></i>
                                     <div>
                                         <h3 class="font-semibold">Pickups</h3>
-                                        <p class="text-sm text-white/70">Manage collection requests</p>
+                                        <p class="text-sm text-white/70">Manage requests</p>
                                     </div>
                                 </a>
                                 
@@ -205,7 +199,7 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                                     <i class="fas fa-chart-bar text-xl w-8"></i>
                                     <div>
                                         <h3 class="font-semibold">Reports</h3>
-                                        <p class="text-sm text-white/70">Analytics and insights</p>
+                                        <p class="text-sm text-white/70">View analytics</p>
                                     </div>
                                 </a>
                             </div>
@@ -214,7 +208,7 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                         <!-- Center Status -->
                         <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl">
                             <h2 class="text-2xl font-bold text-white mb-6">Center Status</h2>
-                            <div class="space-y-4">
+                            <div class="space-y-5">
                                 <div class="flex items-center gap-3">
                                     <i class="fas fa-building w-6 text-white/80"></i>
                                     <span class="text-white"><?php echo htmlspecialchars($center['name']); ?></span>
@@ -237,12 +231,6 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                                         }
                                         ?>
                                     </span>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 mt-4">
-                                    <a href="#" class="text-white hover:text-[#436d2e] transition-all text-sm">
-                                        <i class="fas fa-edit mr-1"></i> Update Center Information
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -287,5 +275,14 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
             </div>
         </div>
     </div>
+    
+    <!-- Mobile menu toggle script -->
+    <script>
+        // Toggle mobile menu
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>

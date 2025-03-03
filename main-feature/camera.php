@@ -64,6 +64,106 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 background-color: rgba(255, 255, 255, 0.1);
                 border-radius: 20px;
             }
+            
+            /* Enhanced styles for AI responses */
+            .ai-response {
+                position: relative;
+                animation: fadeIn 0.5s ease-out;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .ai-response blockquote {
+                line-height: 1.6;
+                font-size: 1.05rem;
+            }
+            
+            .ai-response blockquote h1,
+            .ai-response blockquote h2,
+            .ai-response blockquote h3 {
+                margin-top: 1.5em;
+                margin-bottom: 0.75em;
+                color: #ffffff;
+                font-weight: 600;
+            }
+            
+            .ai-response blockquote h2 {
+                font-size: 1.4rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                padding-bottom: 0.3em;
+            }
+            
+            .ai-response blockquote h3 {
+                font-size: 1.2rem;
+            }
+            
+            .ai-response blockquote ul,
+            .ai-response blockquote ol {
+                padding-left: 1.5em;
+                margin: 1em 0;
+            }
+            
+            .ai-response blockquote li {
+                margin-bottom: 0.5em;
+            }
+            
+            .ai-response blockquote strong {
+                color: #e2e8f0;
+                font-weight: 600;
+            }
+            
+            .ai-response blockquote em {
+                color: #bae6fd;
+            }
+            
+            .ai-response blockquote code {
+                background: rgba(255, 255, 255, 0.15);
+                padding: 0.2em 0.4em;
+                border-radius: 3px;
+                font-family: monospace;
+            }
+            
+            /* Special styling for warnings */
+            .ai-response blockquote p:has(strong:contains("WARNING")) {
+                background: rgba(220, 38, 38, 0.2);
+                padding: 0.75em;
+                border-left: 4px solid rgba(220, 38, 38, 0.7);
+                border-radius: 0.25em;
+                margin: 1em 0;
+            }
+            
+            /* Styling for project sections */
+            .ai-response blockquote h3:contains("Project") {
+                background: rgba(67, 109, 46, 0.2);
+                padding: 0.5em 0.75em;
+                border-radius: 0.25em;
+                margin-top: 1.5em;
+            }
+            
+            /* Tab button active state */
+            .tab-btn.active {
+                background-color: rgba(67, 109, 46, 0.7) !important;
+            }
+            
+            /* Loading spinner */
+            .loading-spinner {
+                border: 3px solid rgba(255,255,255,0.2);
+                border-radius: 50%;
+                border-top: 3px solid rgba(255,255,255,0.8);
+                width: 24px;
+                height: 24px;
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            /* Mobile responsiveness improvements */
             @media (max-width: 640px) {
                 .tab-container {
                     flex-direction: column;
@@ -71,6 +171,57 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 .tab-btn {
                     width: 100%;
                 }
+                .ai-response blockquote {
+                    font-size: 0.95rem;
+                }
+            }
+            
+            /* Fix for dropdown text colors */
+            select option {
+                background-color: #1b1b1b;
+                color: white;
+            }
+            
+            /* Make all select elements have white text */
+            select {
+                color: white;
+            }
+            
+            /* Enhanced view maps button with better visibility */
+            .maps-link {
+                color: #ffffff;
+                background-color: rgba(67, 109, 46, 0.85);
+                padding: 0.4rem 0.8rem;
+                border-radius: 0.5rem;
+                display: inline-flex;
+                align-items: center;
+                transition: all 0.2s ease;
+                border: 2px solid rgba(67, 109, 46, 1);
+                margin-top: 8px;
+                font-weight: 500;
+            }
+            
+            .maps-link:hover {
+                background-color: rgba(67, 109, 46, 1);
+                transform: translateY(-2px);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            .maps-link i {
+                margin-right: 6px;
+            }
+
+            /* Keyframes for border animation */
+            @keyframes borderPulse {
+                0% { border-color: rgba(255, 255, 255, 0.3); }
+                50% { border-color: rgba(13, 255, 0, 0.9); }
+                100% { border-color: rgba(0, 208, 255, 0.3); }
+            }
+            
+            .processing-border {
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                animation: borderPulse 1.5s infinite;
+                box-shadow: 0 0 15px rgba(67, 109, 46, 0.5);
             }
         </style>
     </head>
@@ -94,79 +245,113 @@ require_once __DIR__ . '/../config/serpapi-config.php';
         </nav>
     
         <div class="bg-overlay">
-            <div class="min-h-screen pt-24 pb-12 px-4">
+            <div class="min-h-screen pt-20 pb-12 px-4">
                 <div class="max-w-7xl mx-auto">
-                    <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-6">AI Image Recognition</h2>
-                    <p class="text-white/80 text-center max-w-3xl mx-auto mb-12">Take or upload a photo of your items</p>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white text-center mb-4">AI Image Recognition</h2>
+                    <p class="text-white/80 text-center max-w-3xl mx-auto mb-10">Take or upload a photo of recyclable items to get creative ideas</p>
         
-                    <!-- Camera Interface -->
+                    <!-- Camera Interface with Improved Loading Animation -->
                     <div id="captureContainer" class="w-full max-w-[500px] mx-auto">
-                        <div class="bg-white/5 backdrop-blur-sm p-8 rounded-xl mb-8">
-                            <video id="video" class="w-full h-auto rounded-xl shadow-lg mb-6" playsinline autoplay></video>
+                        <div class="bg-white/5 backdrop-blur-sm p-6 md:p-8 rounded-xl shadow-lg mb-8 border border-white/10">
+                            <!-- Added wrapper for processing animation -->
+                            <div id="cameraWrapper" class="relative rounded-xl transition-all duration-300">
+                                <video id="video" class="w-full h-auto rounded-xl shadow-lg mb-6 border-2 border-white/20" playsinline autoplay></video>
+                                
+                                <!-- Updated loading overlay with circular animation -->
+                                <div id="cameraLoading" class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl overflow-hidden">
+                                    <!-- Ring loader using only Tailwind classes -->
+                                    <div class="relative h-20 w-20 flex items-center justify-center">
+                                        <!-- Outer spinner -->
+                                        <div class="absolute inset-0 rounded-full border-4 border-t-4 border-white/20 border-t-[#436d2e] animate-spin"></div>
+                                        <!-- Inner spinner (opposite direction) -->
+                                        <div class="absolute inset-2 rounded-full border-4 border-t-4 border-white/10 border-t-[#436d2e] animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                                        <!-- Icon in center -->
+                                        <div class="bg-[#436d2e]/80 w-10 h-10 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-camera text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- New processing overlay - subtle dimming while keeping video visible -->
+                                <div id="processingOverlay" class="absolute inset-0 bg-black/25 rounded-xl hidden flex items-center justify-center">
+                                    <span class="bg-black/50 text-white px-4 py-2 rounded-lg text-sm">Processing image...</span>
+                                </div>
+                            </div>
+                            
                             <canvas id="canvas" class="hidden"></canvas>
                             
                             <div class="grid grid-cols-2 gap-4">
-                                <button id="captureButton" class="bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all">
+                                <button id="captureButton" class="group bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all shadow-lg">
                                     <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-camera text-[clamp(1.2rem,4vw,2rem)]"></i>
-                                        <span class="text-sm mt-1">Capture</span>
+                                        <i class="fa-solid fa-camera text-[clamp(1.2rem,4vw,2rem)] group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-sm mt-1 font-medium">Capture</span>
                                     </div>
                                 </button>
                                 
-                                <label class="cursor-pointer">
+                                <label class="cursor-pointer group">
                                     <input type="file" id="imageUpload" accept="image/*" class="hidden">
-                                    <div class="bg-white/10 text-white px-6 py-4 rounded-xl hover:bg-[#436d2e] transition-all text-center">
+                                    <div class="bg-white/10 text-white px-6 py-4 rounded-xl hover:bg-[#436d2e] transition-all text-center shadow-lg">
                                         <div class="flex flex-col items-center">
-                                            <i class="fa-solid fa-upload text-[clamp(1.2rem,4vw,2rem)]"></i>
-                                            <span class="text-sm mt-1">Upload</span>
+                                            <i class="fa-solid fa-upload text-[clamp(1.2rem,4vw,2rem)] group-hover:scale-110 transition-transform"></i>
+                                            <span class="text-sm mt-1 font-medium">Upload</span>
                                         </div>
                                     </div>
                                 </label>
                             </div>
+                            
+                            <!-- Added help text -->
+                            <p class="text-white/60 text-xs text-center mt-6">For best results, ensure proper lighting and focus on the item</p>
                         </div>
                     </div>
         
-                    <!-- Results Interface -->
-                    <div id="captureResultContainer" class="w-full max-w-[1000px] mx-auto hidden">
-                        <div class="grid md:grid-cols-[350px,1fr] gap-8">
+                    <!-- Results Interface with Improved Loading Indicators -->
+                    <div id="captureResultContainer" class="w-full max-w-[1100px] mx-auto hidden">
+                        <div class="grid md:grid-cols-[320px,1fr] gap-6 md:gap-8">
                             <!-- Left Column - Captured Image -->
                             <div class="space-y-4">
-                                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4">
+                                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 shadow-lg">
+                                    <h3 class="text-white/80 text-sm font-medium mb-3 text-center">Captured Image</h3>
                                     <div class="max-w-[250px] mx-auto">
-                                        <div class="aspect-[3/4] rounded-lg overflow-hidden">
+                                        <div class="aspect-[3/4] rounded-lg overflow-hidden border-2 border-white/20">
                                             <img id="capturedImage" class="w-full h-full object-cover" />
                                         </div>
                                     </div>
                                 </div>
                                 <button id="reCaptureButton" 
-                                        class="w-full bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all">
-                                    <i class="fa-solid fa-camera-rotate mr-2"></i> Take Another Photo
+                                        class="w-full bg-[#436d2e] text-white px-6 py-4 rounded-xl hover:bg-opacity-90 transition-all shadow-lg flex items-center justify-center gap-2 font-medium">
+                                    <i class="fa-solid fa-camera-rotate"></i> Take Another Photo
                                 </button>
+                                
+                                <!-- Added processing info -->
+                                <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                                    <h4 class="text-white font-medium mb-2">How It Works</h4>
+                                    <p class="text-white/70 text-sm">Our AI analyzes your image and suggests creative recycling ideas based on the detected items.</p>
+                                </div>
                             </div>
         
                             <!-- Right Column - Results -->
                             <div class="space-y-6">
-                                <!-- Result Preview -->
-                                <div id="captureResultPrediction" class="bg-white/5 backdrop-blur-sm rounded-xl p-6"></div>
+                                <!-- Result Preview - Enhanced -->
+                                <div id="captureResultPrediction" class="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 shadow-lg"></div>
                                 
-                                <!-- Tabs Container -->
+                                <!-- Tabs Container - Enhanced -->
                                 <div class="tab-container grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <button onclick="showTab(0)" 
-                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                            class="tab-btn active flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e]/70 transition-all border border-white/10 shadow-lg">
                                         <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-lightbulb text-white text-xl"></i>
                                         </div>
                                         <span class="text-white font-medium">Project Ideas</span>
                                     </button>
                                     <button onclick="showTab(1)" 
-                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e]/70 transition-all border border-white/10 shadow-lg">
                                         <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-images text-white text-xl"></i>
                                         </div>
                                         <span class="text-white font-medium">Image Ideas</span>
                                     </button>
                                     <button onclick="showTab(2)" 
-                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e] transition-all">
+                                            class="tab-btn flex items-center justify-center gap-3 bg-white/5 backdrop-blur-sm p-4 rounded-xl hover:bg-[#436d2e]/70 transition-all border border-white/10 shadow-lg">
                                         <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-location-dot text-white text-xl"></i>
                                         </div>
@@ -174,15 +359,29 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                                     </button>
                                 </div>
         
-                                <!-- Tab Contents -->
-                                <div class="tab-content bg-white/5 backdrop-blur-sm rounded-xl p-6 max-h-[500px] overflow-y-auto">
+                                <!-- Tab Contents with Improved Loading Indicators -->
+                                <div class="tab-content bg-white/5 backdrop-blur-sm rounded-xl p-6 max-h-[600px] overflow-y-auto border border-white/10 shadow-lg">
                                     <div id="tab1" class="tab-content-item">
                                         <div id="chat-history" class="space-y-4"></div>
+                                        <!-- Improved loading indicator for AI response -->
+                                        <div id="loading-indicator" class="flex flex-col items-center justify-center py-8 hidden">
+                                            <div class="relative h-14 w-14 mb-3">
+                                                <div class="absolute inset-0 rounded-full border-4 border-t-4 border-white/20 border-t-[#436d2e] animate-spin"></div>
+                                            </div>
+                                            <p class="text-white/80 text-sm">Generating creative ideas...</p>
+                                        </div>
                                     </div>
                                     <div id="tab2" class="tab-content-item hidden">
+                                        <!-- Improved loading indicator for images -->
+                                        <div id="image-loading" class="flex flex-col items-center justify-center py-8">
+                                            <div class="relative h-14 w-14 mb-3">
+                                                <div class="absolute inset-0 rounded-full border-4 border-t-4 border-white/20 border-t-[#436d2e] animate-spin"></div>
+                                            </div>
+                                            <p class="text-white/80 text-sm">Loading inspiration images...</p>
+                                        </div>
                                         <div id="chat-images" class="space-y-4"></div>
                                     </div>
-                                    <!-- Centers -->
+                                    <!-- Centers tab content remains mostly unchanged -->
                                     <div id="tab3" class="tab-content-item hidden">
                                         <div class="space-y-6">
                                             <!-- Category Filter -->
@@ -230,7 +429,7 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                                                                     
                                                                     <a href="<?php echo htmlspecialchars($row["link"]); ?>" 
                                                                        target="_blank"
-                                                                       class="inline-flex items-center gap-2 text-[#436d2e] hover:text-white mt-2 text-sm">
+                                                                       class="maps-link">
                                                                         <i class="fa-solid fa-location-dot"></i>
                                                                         <span>View on Maps</span>
                                                                     </a>
@@ -248,11 +447,14 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                                     </div>
                                 </div>
         
-                                <!-- Low Level Indicator -->
-                                <div id="low-level-indicator" class="hidden bg-[#436d2e]/20 text-white p-4 rounded-xl">
+                                <!-- Low Level Indicator - Enhanced -->
+                                <div id="low-level-indicator" class="hidden bg-yellow-600/20 text-yellow-200 p-4 rounded-xl border border-yellow-600/30">
                                     <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                        <p class="font-medium">Low confidence detection. Results may not be accurate.</p>
+                                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                                        <div>
+                                            <p class="font-medium">Low confidence detection</p>
+                                            <p class="text-sm opacity-90">Results may not be accurate. Try taking another photo with better lighting.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -344,17 +546,21 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                     });
                 }
             
-                const userMessage = messagetext;
+                // Show loading indicator
+                document.getElementById('loading-indicator').classList.remove('hidden');
                 
+                // Add enhanced AI response container
                 historyElement.innerHTML += `
-                    <div class="bg-white/20 rounded-lg p-4 mb-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="bg-green-500 p-2 rounded-full">
-                                <i class="fa-solid fa-robot text-white"></i>
+                    <div class="ai-response bg-white/20 rounded-lg p-5 mb-6 border border-white/20 shadow-lg">
+                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+                            <div class="bg-gradient-to-tr from-green-600 to-green-400 p-2 rounded-full shadow-lg">
+                                <i class="fa-solid fa-robot text-white text-lg"></i>
                             </div>
-                            <span class="text-white font-bold">AI Assistant</span>
+                            <div>
+                                <span class="text-white font-bold">AI Recycling Assistant</span>
+                            </div>
                         </div>
-                        <div class="prose prose-invert">
+                        <div class="prose prose-invert max-w-none">
                             <blockquote class="text-white/90 leading-relaxed"></blockquote>
                         </div>
                     </div>
@@ -362,11 +568,17 @@ require_once __DIR__ . '/../config/serpapi-config.php';
             
                 scrollToDocumentBottom();
                 const resultEls = document.querySelectorAll(".prose > blockquote");
-                await updateUI(
-                    resultEls[resultEls.length - 1],
-                    () => chat.sendMessageStream(userMessage),
-                    true,
-                );
+                
+                try {
+                    await updateUI(
+                        resultEls[resultEls.length - 1],
+                        () => chat.sendMessageStream(messagetext),
+                        true,
+                    );
+                } finally {
+                    // Hide loading indicator when complete (success or error)
+                    document.getElementById('loading-indicator').classList.add('hidden');
+                }
             }
             
             async function startChatSortation(messagetext){
@@ -404,6 +616,19 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 );
             }
 
+            // Add function to check if item is a living thing
+            function isLivingThing(itemName) {
+                const livingThingsKeywords = [
+                    'animal', 'bird', 'cat', 'dog', 'fish', 'insect', 'plant', 'flower',
+                    'tree', 'person', 'human', 'snake', 'spider', 'turtle', 'lizard',
+                    'frog', 'toad', 'mouse', 'rat', 'pet', 'wildlife', 'mammal', 'reptile',
+                    'amphibian', 'butterfly', 'bee', 'ant'
+                ];
+                
+                return livingThingsKeywords.some(keyword => 
+                    itemName.toLowerCase().includes(keyword.toLowerCase())
+                );
+            }
 
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
@@ -424,7 +649,8 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 const historyElement = document.getElementById('chat-history');
                 const historySortationElement = document.getElementById('chat-history-sortation');
                 const historyImagesElement = document.getElementById('chat-images');
-                const captureButton = document.getElementById('captureButton');
+                const cameraWrapper = document.getElementById('cameraWrapper');
+                const processingOverlay = document.getElementById('processingOverlay');
                 const lowLevelIndicatorElement = document.getElementById('low-level-indicator');
                 
                 // Verify elements exist before proceeding
@@ -443,6 +669,11 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                     capturedImage.src = dataUrl;
                 }
                 
+                // Show processing border animation
+                cameraWrapper.classList.add('processing-border');
+                processingOverlay.classList.remove('hidden');
+                processingOverlay.classList.add('flex');
+                
                 // Clear previous results
                 captureResultPrediction.innerHTML = "";
                 historyElement.innerHTML = "";
@@ -450,9 +681,6 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                     historySortationElement.innerHTML = "";
                 }
                 historyImagesElement.innerHTML = "";
-                if (captureButton) {
-                    captureButton.innerHTML = "Loading...";
-                }
                 
                 // Reset chat instance
                 chat = null;
@@ -461,7 +689,12 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 mobilenet.load().then(model => {
                     model.classify(canvas).then(predictions => {
                         console.log('Predictions: ', predictions);
-            
+                        
+                        // Remove processing border when done
+                        cameraWrapper.classList.remove('processing-border');
+                        processingOverlay.classList.add('hidden');
+                        processingOverlay.classList.remove('flex');
+                        
                         predictions.forEach((item, index) => {
                             if(index < 1) {
                                 var nameArr = item.className.split(',');
@@ -487,18 +720,67 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                                     </div>
                                 `;
 
-                                const projectPrompt = `As a recycling expert, provide 3 creative DIY project ideas using ${itemName}. 
-                                For each project, include:
-                                🎯 Project Name
-                                📋 Materials Needed
-                                ⚡ Difficulty Level (Easy/Medium/Hard)
-                                📝 Step-by-Step Instructions (numbered)
-                                ♻️ Environmental Impact
-                                💡 Pro Tips
+                                let projectPrompt;
+                                let imagePrompt;
                                 
-                                Format the response with clear headings and spacing for better readability.`;
+                                // Check if the detected item is a living thing
+                                if (isLivingThing(itemName)) {
+                                    // Display warning message
+                                    captureResultPrediction.innerHTML += `
+                                        <div class="bg-yellow-600/20 text-yellow-200 p-4 rounded-lg mt-4">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <p>It appears you've scanned a living thing. We only provide recycling ideas for non-living materials.</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                    
+                                    // Educational prompt about living things instead of recycling projects
+                                    projectPrompt = `I detected "${itemName}" which appears to be a living thing. 
+                                    
+                                    Instead of recycling ideas (which are only suitable for non-living materials), please provide:
+                                    
+                                    1. A brief educational description about this type of living thing
+                                    2. Why it's important to protect and respect living creatures
+                                    3. How this living thing contributes to the environment
+                                    4. 3-5 interesting facts about this type of living thing
+                                    
+                                    Please format this information in a friendly, educational way suitable for all ages.`;
+                                    
+                                    // Image prompt for educational content
+                                    imagePrompt = `Educational images about ${itemName} in nature`;
+                                } else {
+                                    // Regular recycling project prompt for non-living things
+                                    projectPrompt = `As a recycling expert, provide 3 creative DIY upcycling projects using ${itemName}. 
+
+                                        For each project, include:
+                                        🎯 **Project Name**
+                                        📋 **Materials Needed** (with approximate quantities)
+                                        ⚡ **Difficulty Level** (Easy/Medium/Hard)
+                                        ⏱️ **Time Required** (approximate)
+                                        📝 **Step-by-Step Instructions** (numbered, clear and concise)
+                                        💡 **Pro Tips** (for best results)
+                                        
+                                        🔒 **SAFETY WARNINGS**:
+                                        - Include specific safety precautions for handling the material
+                                        - Mention any tools that require adult supervision
+                                        - Highlight potential hazards (sharp edges, chemicals, etc.)
+                                        - Indicate if the project is not suitable for children
+                                        - Mention proper disposal methods for leftover materials
+                                        
+                                        ♻️ **Environmental Impact**:
+                                        Briefly explain how this project helps reduce waste or environmental harm.
+
+                                        Format the response with clear headings, proper spacing, and emoji icons for visual appeal.
+                                        
+                                        IMPORTANT: If the ${itemName} could contain harmful chemicals or require special handling for safety reasons, place this warning prominently at the beginning of your response.`;
+                                        
+                                    // Regular image prompt for recycling projects
+                                    imagePrompt = `DIY recycling project images using ${itemName}`;
+                                }
+                                
+                                // Common prompt for sortation centers regardless of item type
                                 const sortationPrompt = `List recycling centers in the Philippines that accept ${itemName}...`;
-                                const imagePrompt = `Find DIY recycling project images using ${itemName}`;
                     
                                 startChat(projectPrompt);
                                 if (historySortationElement) {
@@ -523,6 +805,12 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                     });
                 }).catch(err => {
                     console.error('Error in image processing:', err);
+                    
+                    // Remove processing border on error
+                    cameraWrapper.classList.remove('processing-border');
+                    processingOverlay.classList.add('hidden');
+                    processingOverlay.classList.remove('flex');
+                    
                     if (captureResultPrediction) {
                         captureResultPrediction.innerHTML = '<div class="text-red-500">Error processing image</div>';
                     }
@@ -531,6 +819,7 @@ require_once __DIR__ . '/../config/serpapi-config.php';
 
             async function search(query) { // Search images function using fetch | search_images.php | search_images_v2.php | search_images_v3.php
                 try {
+                    document.getElementById('image-loading').style.display = 'flex';
                     const response = await fetch(`search_images_v2.php?q=${encodeURIComponent(query)}`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const html = await response.text();
@@ -538,6 +827,8 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 } catch (error) {
                     console.error('Error fetching images:', error);
                     historyImagesElement.innerHTML = '<div class="text-center text-red-500 p-4">Failed to load images</div>';
+                } finally {
+                    document.getElementById('image-loading').style.display = 'none';
                 }
             }
 
@@ -559,6 +850,10 @@ require_once __DIR__ . '/../config/serpapi-config.php';
 
             async function initCamera() {
                 try {
+                    // Show the loading animation
+                    document.getElementById('cameraLoading').classList.remove('hidden');
+                    document.getElementById('cameraLoading').classList.add('flex');
+                    
                     const constraints = { 
                         video: { 
                             facingMode: 'environment',
@@ -580,9 +875,14 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                     video.play();
                     captureButton.disabled = false;
                     
+                    // Hide the loading animation when the camera is ready
+                    document.getElementById('cameraLoading').classList.add('hidden');
+                    document.getElementById('cameraLoading').classList.remove('flex');
                 } catch (err) {
                     console.error('Camera error:', err);
                     alert('Could not access camera. Please ensure camera permissions are granted.');
+                    document.getElementById('cameraLoading').classList.add('hidden');
+                    document.getElementById('cameraLoading').classList.remove('flex');
                 }
             }
             
@@ -603,7 +903,7 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                 reCaptureButton.addEventListener('click', () => {
                     captureContainer.style.display = "block";
                     captureResultContainer.style.display = "none";
-                    captureButton.innerHTML = '<i class="fa-solid fa-camera"></i>';
+                    // REMOVED: Don't reset the capture button text
                     initCamera();
                 });
             
