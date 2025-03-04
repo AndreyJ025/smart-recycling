@@ -13,8 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'update_role':
+                // Handle role updates - now includes user_type field
+                $stmt = $conn->prepare("UPDATE tbl_user SET user_type = ? WHERE id = ?");
+                $stmt->bind_param("si", $_POST['user_type'], $_POST['user_id']);
+                $stmt->execute();
+                
+                // Update is_admin flag if needed
+                $is_admin = ($_POST['user_type'] === 'admin') ? 1 : 0;
                 $stmt = $conn->prepare("UPDATE tbl_user SET is_admin = ? WHERE id = ?");
-                $stmt->bind_param("ii", $_POST['is_admin'], $_POST['user_id']);
+                $stmt->bind_param("ii", $is_admin, $_POST['user_id']);
                 $stmt->execute();
                 break;
                 
@@ -45,20 +52,28 @@ if ($search) {
     $query .= " AND (fullname LIKE ? OR username LIKE ?)";
 }
 if ($role !== 'all') {
-    $query .= " AND is_admin = ?";
+    // Filter based on user_type instead of just is_admin
+    if ($role === 'admin') {
+        $query .= " AND is_admin = 1";
+    } else {
+        $query .= " AND user_type = ?";
+    }
 }
 $query .= " ORDER BY fullname ASC";
 
 // Prepare and execute query
 $stmt = $conn->prepare($query);
-if ($search && $role !== 'all') {
+if ($search && $role !== 'all' && $role !== 'admin') {
     $search = "%$search%";
-    $stmt->bind_param("ssi", $search, $search, $role);
+    $stmt->bind_param("sss", $search, $search, $role);
+} elseif ($search && $role === 'admin') {
+    $search = "%$search%";
+    $stmt->bind_param("ss", $search, $search);
 } elseif ($search) {
     $search = "%$search%";
     $stmt->bind_param("ss", $search, $search);
-} elseif ($role !== 'all') {
-    $stmt->bind_param("i", $role);
+} elseif ($role !== 'all' && $role !== 'admin') {
+    $stmt->bind_param("s", $role);
 }
 $stmt->execute();
 $users = $stmt->get_result();
@@ -125,8 +140,10 @@ $users = $stmt->get_result();
                                class="flex-1 px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
                         <select name="role" class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e] [&>option]:text-white [&>option]:bg-[#1b1b1b]">
                             <option value="all" <?php echo $role === 'all' ? 'selected' : ''; ?>>All Users</option>
-                            <option value="0" <?php echo $role === '0' ? 'selected' : ''; ?>>Regular Users</option>
-                            <option value="1" <?php echo $role === '1' ? 'selected' : ''; ?>>Admins</option>
+                            <option value="user" <?php echo $role === 'user' ? 'selected' : ''; ?>>Regular Users</option>
+                            <option value="admin" <?php echo $role === 'admin' ? 'selected' : ''; ?>>Admins</option>
+                            <option value="center" <?php echo $role === 'center' ? 'selected' : ''; ?>>Recycling Centers</option>
+                            <option value="business" <?php echo $role === 'business' ? 'selected' : ''; ?>>Businesses</option>
                         </select>
                         <button type="submit" class="px-6 py-2 bg-[#436d2e] text-white rounded-lg hover:bg-opacity-90">
                             <i class="fas fa-search mr-2"></i>Search
@@ -157,10 +174,12 @@ $users = $stmt->get_result();
                                         <form method="POST" class="inline">
                                             <input type="hidden" name="action" value="update_role">
                                             <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <select name="is_admin" onchange="this.form.submit()" 
+                                            <select name="user_type" onchange="this.form.submit()" 
                                                     class="bg-white/10 text-white rounded px-2 py-1 [&>option]:bg-[#1b1b1b] [&>option]:text-white">
-                                                <option value="0" <?php echo !$user['is_admin'] ? 'selected' : ''; ?>>User</option>
-                                                <option value="1" <?php echo $user['is_admin'] ? 'selected' : ''; ?>>Admin</option>
+                                                <option value="user" <?php echo $user['user_type'] === 'user' ? 'selected' : ''; ?>>User</option>
+                                                <option value="admin" <?php echo $user['is_admin'] == 1 ? 'selected' : ''; ?>>Admin</option>
+                                                <option value="center" <?php echo $user['user_type'] === 'center' ? 'selected' : ''; ?>>Center</option>
+                                                <option value="business" <?php echo $user['user_type'] === 'business' ? 'selected' : ''; ?>>Business</option>
                                             </select>
                                         </form>
                                     </td>

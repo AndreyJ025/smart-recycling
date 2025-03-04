@@ -203,7 +203,7 @@ $time_series_data = $stmt->get_result();
         <div class="relative min-h-screen pt-20 pb-12">
             <div class="container mx-auto px-4">
                 <div class="max-w-6xl mx-auto">
-                    <h1 class="text-3xl font-bold text-white mb-8">Reports & Analytics</h1>
+                    <h1 class="text-3xl font-bold text-white mb-8">Analytics</h1>
                     
                     <!-- Filters -->
                     <div class="bg-white/5 backdrop-blur-sm p-6 rounded-xl mb-8">

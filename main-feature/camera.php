@@ -355,7 +355,7 @@ require_once __DIR__ . '/../config/serpapi-config.php';
                                         <div class="bg-[#436d2e] p-2 rounded-full">
                                             <i class="fa-solid fa-location-dot text-white text-xl"></i>
                                         </div>
-                                        <span class="text-white font-medium">Sortation Centers</span>
+                                        <span class="text-white font-medium">Recycling Centers</span>
                                     </button>
                                 </div>
         

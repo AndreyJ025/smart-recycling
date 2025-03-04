@@ -198,7 +198,7 @@ $bulk_stats = $stmt->get_result()->fetch_assoc();
                                 <a href="reports.php" class="flex items-center gap-3 p-4 bg-white/10 rounded-xl text-white hover:bg-[#436d2e]/50 transition-all">
                                     <i class="fas fa-chart-bar text-xl w-8"></i>
                                     <div>
-                                        <h3 class="font-semibold">Reports</h3>
+                                        <h3 class="font-semibold">Analytics</h3>
                                         <p class="text-sm text-white/70">View analytics</p>
                                     </div>
                                 </a>
