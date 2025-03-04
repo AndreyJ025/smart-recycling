@@ -347,7 +347,7 @@ function getLinkWithAuth($path, $requiresAuth = true) {
                         <h3 class="text-white text-2xl font-semibold mb-2">Recycle</h3>
                         <p class="text-white/70 group-hover:text-white/90">Start your eco-journey by recycling or donating items</p>
                     </a>
-                    <a href="view-sortation.php" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
+                    <a href="<?php echo getLinkWithAuth('view-sortation.php'); ?>" class="group bg-white/5 backdrop-blur-sm p-8 rounded-xl hover:bg-[#436d2e] transition-all">
                         <div class="bg-[#436d2e] group-hover:bg-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                             <i class="fa-solid fa-map-location-dot text-white group-hover:text-[#436d2e] text-2xl"></i>
                         </div>
