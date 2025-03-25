@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 // Fetch total points
 $total_points_sql = "SELECT total_points FROM tbl_user WHERE id = ?";
 $stmt_points = $conn->prepare($total_points_sql);
-stmt_points->bind_param("i", $_SESSION["user_id"]);
+$stmt_points->bind_param("i", $_SESSION["user_id"]);
 $stmt_points->execute();
 $total_points_result = $stmt_points->get_result();
 $total_points = $total_points_result->fetch_assoc()["total_points"] ?? 0;

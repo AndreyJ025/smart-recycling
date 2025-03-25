@@ -32,13 +32,13 @@ COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
 # Create a script to handle database connection updates
-COPY docker/update-db-config.sh /usr/local/bin/
+COPY docker/update-db-config.sh /usr/local/bin/update-db-config.sh
 RUN chmod +x /usr/local/bin/update-db-config.sh
 
 # Set entrypoint
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Start Apache
 CMD ["apache2-foreground"]

@@ -15,26 +15,228 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             case 'update_role':
                 // Handle role updates - now includes user_type field
                 $stmt = $conn->prepare("UPDATE tbl_user SET user_type = ? WHERE id = ?");
-                $stmt->bind_param("si", $_POST['user_type'], $_POST['user_id']);
-                $stmt->execute();
-                
-                // Update is_admin flag if needed
-                $is_admin = ($_POST['user_type'] === 'admin') ? 1 : 0;
-                $stmt = $conn->prepare("UPDATE tbl_user SET is_admin = ? WHERE id = ?");
-                $stmt->bind_param("ii", $is_admin, $_POST['user_id']);
-                $stmt->execute();
+                if ($stmt) {
+                    $stmt->bind_param("si", $_POST['user_type'], $_POST['user_id']);
+                    $stmt->execute();
+                    
+                    // Update is_admin flag if needed
+                    $is_admin = ($_POST['user_type'] === 'admin') ? 1 : 0;
+                    $stmt = $conn->prepare("UPDATE tbl_user SET is_admin = ? WHERE id = ?");
+                    if ($stmt) {
+                        $stmt->bind_param("ii", $is_admin, $_POST['user_id']);
+                        $stmt->execute();
+                    }
+                }
                 break;
                 
             case 'update_points':
                 $stmt = $conn->prepare("UPDATE tbl_user SET total_points = ? WHERE id = ?");
-                $stmt->bind_param("ii", $_POST['points'], $_POST['user_id']);
-                $stmt->execute();
+                if ($stmt) {
+                    $stmt->bind_param("ii", $_POST['points'], $_POST['user_id']);
+                    $stmt->execute();
+                }
                 break;
                 
             case 'delete':
-                $stmt = $conn->prepare("DELETE FROM tbl_user WHERE id = ?");
-                $stmt->bind_param("i", $_POST['user_id']);
-                $stmt->execute();
+                // Start a transaction
+                $conn->begin_transaction();
+                
+                try {
+                    $user_id = $_POST['user_id'];
+                    error_log("Starting deletion for user ID: $user_id");
+                    
+                    // First check if this is a center user
+                    $check_stmt = $conn->prepare("SELECT user_type, center_id FROM tbl_user WHERE id = ?");
+                    if (!$check_stmt) {
+                        throw new Exception("Failed to prepare user check query: " . $conn->error);
+                    }
+                    
+                    $check_stmt->bind_param("i", $user_id);
+                    $check_stmt->execute();
+                    $user_data = $check_stmt->get_result()->fetch_assoc();
+                    
+                    error_log("User type: " . ($user_data['user_type'] ?? 'unknown'));
+                    
+                    // Delete related records first
+                    if ($user_data) {
+                        // For business users, need to handle:
+                        if ($user_data['user_type'] === 'business') {
+                            error_log("Processing business user deletion");
+                            
+                            // 1. Delete quotes related to bulk requests first
+                            $quotes_query = "DELETE q FROM tbl_quotes q 
+                                INNER JOIN tbl_bulk_requests br ON q.request_id = br.id 
+                                WHERE br.business_id = ?";
+                            $quotes_stmt = $conn->prepare($quotes_query);
+                            if ($quotes_stmt) {
+                                $quotes_stmt->bind_param("i", $user_id);
+                                $quotes_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare business quotes query: " . $conn->error);
+                            }
+                            
+                            // 2. Then delete bulk requests
+                            $bulk_stmt = $conn->prepare("DELETE FROM tbl_bulk_requests WHERE business_id = ?");
+                            if ($bulk_stmt) {
+                                $bulk_stmt->bind_param("i", $user_id);
+                                $bulk_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare bulk requests query: " . $conn->error);
+                            }
+                        }
+                        
+                        // Using simpler DELETE syntax for compatibility
+                        $pickup_notif_stmt = $conn->prepare("DELETE FROM tbl_pickup_notifications 
+                                                           WHERE pickup_id IN (SELECT id FROM tbl_pickups WHERE user_id = ?)");
+                        if ($pickup_notif_stmt) {
+                            $pickup_notif_stmt->bind_param("i", $user_id);
+                            $pickup_notif_stmt->execute();
+                        } else {
+                            error_log("Failed to prepare pickup notifications query: " . $conn->error);
+                        }
+                        
+                        // Delete pickup records
+                        $pickup_stmt = $conn->prepare("DELETE FROM tbl_pickups WHERE user_id = ?");
+                        if ($pickup_stmt) {
+                            $pickup_stmt->bind_param("i", $user_id);
+                            $pickup_stmt->execute();
+                        } else {
+                            error_log("Failed to prepare pickups query: " . $conn->error);
+                        }
+                        
+                        // Delete redemption records
+                        $redemption_stmt = $conn->prepare("DELETE FROM tbl_redemptions WHERE user_id = ?");
+                        if ($redemption_stmt) {
+                            $redemption_stmt->bind_param("i", $user_id);
+                            $redemption_stmt->execute();
+                        } else {
+                            error_log("Failed to prepare redemptions query: " . $conn->error);
+                        }
+                        
+                        // Delete remit records
+                        $remit_stmt = $conn->prepare("DELETE FROM tbl_remit WHERE user_id = ?");
+                        if ($remit_stmt) {
+                            $remit_stmt->bind_param("i", $user_id);
+                            $remit_stmt->execute();
+                        } else {
+                            error_log("Failed to prepare remit query: " . $conn->error);
+                        }
+                        
+                        // If center user, handle center-related data
+                        if ($user_data['user_type'] === 'center' && !empty($user_data['center_id'])) {
+                            error_log("Processing center user deletion, center_id: " . $user_data['center_id']);
+                            
+                            // Delete quotes for this center
+                            $center_quotes_stmt = $conn->prepare("DELETE FROM tbl_quotes WHERE center_id = ?");
+                            if ($center_quotes_stmt) {
+                                $center_quotes_stmt->bind_param("i", $user_data['center_id']);
+                                $center_quotes_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare center quotes query: " . $conn->error);
+                            }
+                            
+                            // Delete inventory records
+                            $inventory_stmt = $conn->prepare("DELETE FROM tbl_inventory WHERE center_id = ?");
+                            if ($inventory_stmt) {
+                                $inventory_stmt->bind_param("i", $user_data['center_id']);
+                                $inventory_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare inventory query: " . $conn->error);
+                            }
+                            
+                            // Delete processing records
+                            $processing_stmt = $conn->prepare("DELETE FROM tbl_processing WHERE center_id = ?");
+                            if ($processing_stmt) {
+                                $processing_stmt->bind_param("i", $user_data['center_id']);
+                                $processing_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare processing query: " . $conn->error);
+                            }
+                            
+                            // Check for any other users associated with this center - This is the line that was failing
+                            $other_users_query = "UPDATE tbl_user SET center_id = NULL WHERE center_id = ? AND id != ?";
+                            $other_users_stmt = $conn->prepare($other_users_query);
+                            if ($other_users_stmt) {
+                                $other_users_stmt->bind_param("ii", $user_data['center_id'], $user_id);
+                                $other_users_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare other users update query: " . $conn->error);
+                            }
+                            
+                            // Finally delete the center
+                            $center_stmt = $conn->prepare("DELETE FROM tbl_sortation_centers WHERE id = ?");
+                            if ($center_stmt) {
+                                $center_stmt->bind_param("i", $user_data['center_id']);
+                                $center_stmt->execute();
+                            } else {
+                                error_log("Failed to prepare center deletion query: " . $conn->error);
+                            }
+                        }
+                    }
+                    
+                    // Delete user notifications
+                    $notif_stmt = $conn->prepare("DELETE FROM tbl_notifications WHERE user_id = ?");
+                    if ($notif_stmt) {
+                        $notif_stmt->bind_param("i", $user_id);
+                        $notif_stmt->execute();
+                    } else {
+                        error_log("Failed to prepare notifications query: " . $conn->error);
+                    }
+                    
+                    // Delete user settings
+                    $settings_stmt = $conn->prepare("DELETE FROM tbl_user_settings WHERE user_id = ?");
+                    if ($settings_stmt) {
+                        $settings_stmt->bind_param("i", $user_id);
+                        $settings_stmt->execute();
+                    } else {
+                        error_log("Failed to prepare settings query: " . $conn->error);
+                    }
+                    
+                    // Delete any record in tbl_user_activity
+                    $activity_stmt = $conn->prepare("DELETE FROM tbl_user_activity WHERE user_id = ?");
+                    if ($activity_stmt) {
+                        $activity_stmt->bind_param("i", $user_id);
+                        $activity_stmt->execute();
+                    } else {
+                        error_log("Failed to prepare activity query: " . $conn->error);
+                    }
+                    
+                    // Finally delete the user
+                    $user_stmt = $conn->prepare("DELETE FROM tbl_user WHERE id = ?");
+                    if ($user_stmt) {
+                        $user_stmt->bind_param("i", $user_id);
+                        $user_stmt->execute();
+                    } else {
+                        throw new Exception("Failed to prepare user deletion query: " . $conn->error);
+                    }
+                    
+                    // Commit the transaction
+                    $conn->commit();
+                    
+                    // Set success message
+                    $_SESSION['message'] = "User deleted successfully";
+                    $_SESSION['message_type'] = "success";
+                    error_log("User deletion completed successfully");
+                    
+                } catch (Exception $e) {
+                    // Rollback on error
+                    $conn->rollback();
+                    
+                    // Get more detailed error information
+                    $error_message = $e->getMessage();
+                    $error_code = $e->getCode();
+                    $error_location = $e->getTraceAsString();
+                    
+                    // Log the complete error details
+                    error_log("User deletion error: " . $error_message);
+                    error_log("Error code: " . $error_code);
+                    error_log("Error location: " . $error_location);
+                    error_log("SQL error: " . $conn->error);
+                    
+                    // Set error message with more details
+                    $_SESSION['message'] = "Error deleting user (Code: {$error_code}): {$error_message}";
+                    $_SESSION['message_type'] = "error";
+                }
                 break;
         }
         header("Location: manage-users.php");
@@ -63,20 +265,25 @@ $query .= " ORDER BY fullname ASC";
 
 // Prepare and execute query
 $stmt = $conn->prepare($query);
-if ($search && $role !== 'all' && $role !== 'admin') {
-    $search = "%$search%";
-    $stmt->bind_param("sss", $search, $search, $role);
-} elseif ($search && $role === 'admin') {
-    $search = "%$search%";
-    $stmt->bind_param("ss", $search, $search);
-} elseif ($search) {
-    $search = "%$search%";
-    $stmt->bind_param("ss", $search, $search);
-} elseif ($role !== 'all' && $role !== 'admin') {
-    $stmt->bind_param("s", $role);
+if (!$stmt) {
+    error_log("Failed to prepare users list query: " . $conn->error);
+    $users = null;
+} else {
+    if ($search && $role !== 'all' && $role !== 'admin') {
+        $search = "%$search%";
+        $stmt->bind_param("sss", $search, $search, $role);
+    } elseif ($search && $role === 'admin') {
+        $search = "%$search%";
+        $stmt->bind_param("ss", $search, $search);
+    } elseif ($search) {
+        $search = "%$search%";
+        $stmt->bind_param("ss", $search, $search);
+    } elseif ($role !== 'all' && $role !== 'admin') {
+        $stmt->bind_param("s", $role);
+    }
+    $stmt->execute();
+    $users = $stmt->get_result();
 }
-$stmt->execute();
-$users = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -150,6 +357,18 @@ $users = $stmt->get_result();
                         </button>
                     </form>
                 </div>
+
+                <!-- success and error meessage -->
+                <?php if (isset($_SESSION['message'])): ?>
+                    <div class="mb-8 p-4 rounded-xl <?php echo $_SESSION['message_type'] === 'success' ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'; ?>">
+                        <p class="text-white"><?php echo $_SESSION['message']; ?></p>
+                    </div>
+                    <?php 
+                    // Clear the message after displaying
+                    unset($_SESSION['message']); 
+                    unset($_SESSION['message_type']);
+                    ?>
+                <?php endif; ?>
 
                 <!-- Users List -->
                 <div class="bg-white/5 p-8 rounded-xl backdrop-blur-sm">

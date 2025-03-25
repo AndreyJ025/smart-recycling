@@ -538,7 +538,7 @@ require_once __DIR__ . '/../config/serpapi-config.php';
 
             async function startChat(messagetext){
                 if (!chat) {
-                    const model = await getGenerativeModel({ model: "gemini-1.5-flash" });
+                    const model = await getGenerativeModel({ model: "gemini-2.0-pro-exp-02-05" });
                     chat = model.startChat({
                         generationConfig: {
                             maxOutputTokens: 5000,

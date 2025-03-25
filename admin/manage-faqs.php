@@ -154,14 +154,97 @@ $faqs = $conn->query("SELECT * FROM tbl_faqs ORDER BY created_at DESC");
                 </div>
             </div>
         </div>
+
     </div>
 
+            <!-- Edit FAQ Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-[#1b1b1b] rounded-xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-[#1b1b1b] border-b border-white/10 p-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-white">Edit FAQ</h2>
+                    <button onclick="closeEditModal()" class="text-white/60 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form method="POST" class="space-y-4">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="id" id="editId">
+                    
+                    <div>
+                        <label class="block text-white mb-2">Question</label>
+                        <input type="text" name="question" id="editQuestion" required
+                                class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white mb-2">Answer</label>
+                        <textarea name="answer" id="editAnswer" required rows="4"
+                                    class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white mb-2">Category</label>
+                        <input type="text" name="category" id="editCategory" required
+                                class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:outline-none focus:border-[#436d2e]">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="submit" 
+                                class="bg-[#436d2e] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
     <script>
-    function editFaq(id) {
-        // Implement edit functionality
-        // You can use a modal or redirect to an edit page
-        alert('Edit FAQ ' + id);
-    }
+        // Create a mapping of FAQ data
+        const faqData = <?php 
+            $faqArray = [];
+            $faqs->data_seek(0); // Reset the result pointer
+            while($faq = $faqs->fetch_assoc()) {
+                $faqArray[$faq['id']] = [
+                    'question' => htmlspecialchars($faq['question']),
+                    'answer' => htmlspecialchars($faq['answer']),
+                    'category' => htmlspecialchars($faq['category'])
+                ];
+            }
+            echo json_encode($faqArray);
+        ?>;
+                
+        function editFaq(id) {
+            // Populate the edit form with the FAQ data
+            document.getElementById('editId').value = id;
+            document.getElementById('editQuestion').value = faqData[id].question;
+            document.getElementById('editAnswer').value = faqData[id].answer;
+            document.getElementById('editCategory').value = faqData[id].category;
+            
+            // Show the modal
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+        
+        // Add keyboard event listener to close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEditModal();
+            }
+        });
     </script>
 </body>
 </html>
